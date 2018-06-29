@@ -7,7 +7,7 @@
 #include "LogStream.h"
 #include "ErrLogStream.h"
 #include "functions.h"
-#include "ag_definitions.h"
+#include "vis_definitions.h"
 #include "ag_functions.h"
 
 #include <errno.h>
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 	}catch(TE_ERROR err){
 		te_errMsg((TE_ERROR)err);
 		return 1;
-	}catch(AG_ERROR err){
+	}catch(VIS_ERROR err){
 		ErrLogStream errlog;
 		switch(err) 
 		{

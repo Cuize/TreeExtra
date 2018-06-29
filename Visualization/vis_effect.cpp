@@ -7,7 +7,7 @@
 #include "LogStream.h"
 #include "ErrLogStream.h"
 #include "functions.h"
-#include "ag_definitions.h"
+#include "vis_definitions.h"
 #include "ag_functions.h"
 
 #include <errno.h>
@@ -100,21 +100,18 @@ int main(int argc, char* argv[])
 	if(suffix.size())
 		in_suffix = "." + suffix;
 	string outFName = attrName + in_suffix + ".effect.txt";
-	clog << "Partial dependence function values are saved into file " << outFName << ".\n";
+	clog << "Partial dependence function values are saved into the file " << outFName << ".\n";
 
 	}catch(TE_ERROR err){
 		te_errMsg((TE_ERROR)err);
 		return 1;
-	}catch(AG_ERROR err){
+	}catch(VIS_ERROR err){
 		ErrLogStream errlog;
 		switch(err) 
 		{
 			case INPUT_ERR:
 				errlog << "Usage: -v _validation_set_ -r _attr_file_ -f _feature_ [-m _model_file_name_] "
 					<< "[-o _output_file_name_] [-q _#quantile_values_] | -version\n";
-				break;
-			case ATTR_NAME_ERR:
-				errlog << "Error: attribute name misspelled or the attribute is not active.\n";
 				break;
 			default:
 				throw err;

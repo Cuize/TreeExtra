@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	TrainInfo ti; //model training parameters
 	string modelFName = "model.bin";	//name of the output file for the model
 	string predFName = "preds.txt";		//name of the output file for predictions
-	int topAttrN = 0;  //how many top attributes to output and keep in the cut data 
+	int topAttrN = -1;  //how many top attributes to output and keep in the cut data 
 							//(0 = do not do feature selection)
 							//(-1 = output all available features)
 	bool doOut = true; //whether to output log information to stdout
@@ -308,6 +308,8 @@ int main(int argc, char* argv[])
 			data.ignoreAttr(attrCounts[attrNo].first);
 		data.outAttr(ti.attrFName);
 	}
+
+	data.correlations(ti.trainFName);
 
 	}catch(TE_ERROR err){
 		te_errMsg((TE_ERROR)err);
