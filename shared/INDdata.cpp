@@ -135,6 +135,11 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			throw OPEN_TRAIN_ERR;
 		 
 		hasMV = false;
+		hasActiveMV = false;
+		intv mvCounts(activeAttrN);
+		intv activeAttrs;
+		getActiveAttrs(activeAttrs);
+
 		getLineExt(fin, buf);
 		int caseNo;
 		for(caseNo = 0; fin.gcount(); caseNo++)
@@ -156,6 +161,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 				if(weightColNo != -1)
 					item.erase(item.begin() + min(tarColNo, weightColNo));
 
+				//check if boolean attributes have valid values
 				for (intset::iterator boolIt = boolAttrs.begin(); boolIt != boolAttrs.end(); boolIt++)
 				{
 					int attrId = *boolIt;
@@ -165,6 +171,11 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 						throw ATTR_NOT_BOOL_ERR;
 					}
 				}
+
+				if(hasMV)
+					for(int activeNo = 0; activeNo < activeAttrN; activeNo++)
+						if(isnan(item[activeAttrs[activeNo]]))
+							mvCounts[activeNo]++;
 			}
 			catch (TE_ERROR err) {
 				cerr << "\nLine " << caseNo + 1 << "\n";
@@ -195,6 +206,22 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		clog << trainN << " points in the train set, std. dev. of " << tarName << " values = " << trainStD 
 			<< "\n\n"; 
 		fin.close();
+
+		//output missing values counts
+		for(int activeNo = 0; activeNo < activeAttrN; activeNo++)
+			if(mvCounts[activeNo] > 0)
+				hasActiveMV = true;
+		if(hasActiveMV)
+		{
+			fstream fmisval;
+			fmisval.open("missing_values.txt", ios_base::out);
+			fmisval << "Attribute\tnumber of missing values in the training data\n";
+			for(int activeNo = 0; activeNo < activeAttrN; activeNo++)
+				if(mvCounts[activeNo] > 0)
+					fmisval << getAttrName(activeAttrs[activeNo]) << "\t" << mvCounts[activeNo] << "\n";
+			fmisval.close();
+			clog << "Warning: active attributes have missing values. More information in missing_values.txt.\n\n";
+		}
 
 		//initialize bootstrap (bag of data)
 		bootstrap.resize(trainN); 

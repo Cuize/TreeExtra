@@ -309,7 +309,10 @@ int main(int argc, char* argv[])
 		data.outAttr(ti.attrFName);
 	}
 
-	data.correlations(ti.trainFName);
+	if(data.getHasActiveMV())
+		clog << "Warning: the data has missing values in active attributes, correlations can not be calculated.\n\n";
+	else
+		data.correlations(ti.trainFName);
 
 	}catch(TE_ERROR err){
 		te_errMsg((TE_ERROR)err);

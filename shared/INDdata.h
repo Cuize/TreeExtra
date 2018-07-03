@@ -19,7 +19,8 @@ public:
 	int getTarColNo(){return tarColNo;}
 	int getTargets(doublev& targets, DATA_SET dset);
 	int getOutOfBag(intv& oobData_out, doublev& oobTar_out);
-	bool getHasMV(){return hasMV || (weightColNo != -1);}
+	bool useCoef(){return hasActiveMV || (weightColNo != -1);}
+	bool getHasActiveMV(){return hasActiveMV;}
 
 //untrivial get functions
 
@@ -133,12 +134,13 @@ private:
 	intv bootstrap;		//indexes of data points currently in the bag, can be repeating
 	int oobN;			//number of out-of-bag data points
 	intv oobData;		//indexes of out-of-bag data points
-	doublev oobTar;		//targests for out-of-bag data points
+	doublev oobTar;		//targets for out-of-bag data points
 
 	fipairvv sortedItems; //several copies of sorted data points in the bag
 							//separate vector for sorting by each attribute
 							//each data point represented as (id, attrvalue) pair
 
 	bool hasMV;			//data has missing values
+	bool hasActiveMV;	//data has missing values in active attributes
 
 };
