@@ -19,10 +19,10 @@
 INDdata::INDdata(const char* trainFName, const char* validFName, const char* testFName,
 	const char* attrFName, bool doOut)
 {
-	LogStream clog;
+	LogStream telog;
 
 	//read attr file, collect info about boolean attributes and attrN
-	clog << "Reading the attribute file: \"" << attrFName << "\"\n";
+	telog << "Reading the attribute file: \"" << attrFName << "\"\n";
 	fstream fattr;
 	fattr.open(attrFName, ios_base::in);
 	if(!fattr) 
@@ -107,7 +107,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			attrName = trimSpace(attrName);
 			int neverAttrId = getAttrId(attrName);
 			if (neverAttrId == -1)
-				clog << "\nWARNING: trying to exclude \"" << attrName << "\" - this is not a valid feature\n\n";
+				telog << "\nWARNING: trying to exclude \"" << attrName << "\" - this is not a valid feature\n\n";
 			else
 				ignoreAttrs.insert(neverAttrId);
 		}
@@ -116,7 +116,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 	fattr.close();
 	
 	int activeAttrN = attrN - (int)ignoreAttrs.size();
-	clog << attrN << " attributes\n" << activeAttrN << " active attributes\n\n";
+	telog << attrN << " attributes\n" << activeAttrN << " active attributes\n\n";
 	if(!isSubset(nomAttrs, ignoreAttrs))
 		throw NOM_ACTIVE_ERR;
 
@@ -128,7 +128,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 	//Read data
 	if(string(trainFName).compare("") != 0)
 	{//Read train set
-		clog << "Reading the train set: \"" << trainFName << "\"\n";
+		telog << "Reading the train set: \"" << trainFName << "\"\n";
 		fstream fin;
 		fin.open(trainFName, ios_base::in);
 		if(fin.fail()) 
@@ -203,7 +203,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 		double trainStD = getTarStD(TRAIN);
-		clog << trainN << " points in the train set, std. dev. of " << tarName << " values = " << trainStD 
+		telog << trainN << " points in the train set, std. dev. of " << tarName << " values = " << trainStD 
 			<< "\n\n"; 
 		fin.close();
 
@@ -220,7 +220,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 				if(mvCounts[activeNo] > 0)
 					fmisval << getAttrName(activeAttrs[activeNo]) << "\t" << mvCounts[activeNo] << "\n";
 			fmisval.close();
-			clog << "Warning: active attributes have missing values. More information in missing_values.txt.\n\n";
+			telog << "Warning: active attributes have missing values. More information in missing_values.txt.\n\n";
 		}
 
 		//initialize bootstrap (bag of data)
@@ -232,7 +232,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 	if(string(validFName).compare("") != 0)
 	{//Read validation set
-		clog << "Reading the validation set: \"" << validFName << "\"\n";
+		telog << "Reading the validation set: \"" << validFName << "\"\n";
 		fstream fvalid;
 		fvalid.open(validFName, ios_base::in); 
 		if(fvalid.fail())
@@ -269,7 +269,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		if(validN == 0)
 			throw VALID_EMPTY_ERR;
 		double validStD = getTarStD(VALID);
-		clog << validN << " points in the validation set, std. dev. of " << tarName << " values = " 
+		telog << validN << " points in the validation set, std. dev. of " << tarName << " values = " 
 			<< validStD << "\n\n"; 
 		fvalid.close();
 	}
@@ -278,7 +278,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 	if(string(testFName).compare("") != 0)
 	{//Read test set
-		clog << "Reading the test set: \"" << testFName << "\"\n";
+		telog << "Reading the test set: \"" << testFName << "\"\n";
 		fstream ftest;
 		ftest.open(testFName, ios_base::in); 
 		if(ftest.fail()) 
@@ -311,7 +311,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		}
 		testN = caseNo;
 		double testStD = getTarStD(TEST);
-		clog << testN << " points in the test set, std. dev. of " << tarName << " values = " << testStD 
+		telog << testN << " points in the test set, std. dev. of " << tarName << " values = " << testStD 
 			<< "\n\n";
 		ftest.close();
 	}
@@ -725,7 +725,7 @@ void INDdata::outAttr(string attrFName)
 //returns the length of valCounts as return value
 int INDdata::getQuantiles(int attrId, int& quantN, dipairv& valCounts)
 {
-	LogStream clog;
+	LogStream telog;
 
 	doublev attrVals; //all values of given attribute in the validation set; sorted, w duplicates
 	getValues(attrId, attrVals); 
@@ -733,7 +733,7 @@ int INDdata::getQuantiles(int attrId, int& quantN, dipairv& valCounts)
 	bool singleVal = false;
 	if(equalsNaN(attrVals[0], attrVals[valsN - 1]))
 	{
-		clog << "Warning: feature " << attrNames[attrId] << " takes on a single value on the whole validation set\n";
+		telog << "Warning: feature " << attrNames[attrId] << " takes on a single value on the whole validation set\n";
 		singleVal = true;
 	}
 	
@@ -751,7 +751,7 @@ int INDdata::getQuantiles(int attrId, int& quantN, dipairv& valCounts)
 			quantN *= 2;
 	}
 	if(oldQuantN != quantN)
-		clog << "Warning: " << oldQuantN << " quantile values was not enough to see the effect of " 
+		telog << "Warning: " << oldQuantN << " quantile values was not enough to see the effect of " 
 			<< attrNames[attrId] << ". The number of quantile values for this feature was changed to " 
 			<< quantN << ".\n\n";
 
@@ -778,6 +778,8 @@ int INDdata::getQuantiles(int attrId, int& quantN, dipairv& valCounts)
 //calculates and outputs correlation scores between active attributes based on the training set
 void INDdata::correlations(string trainFName)
 {
+	LogStream telog;
+
 	//get a list of defined attributes
 	intv attrs;
 	getActiveAttrs(attrs);
@@ -874,6 +876,5 @@ void INDdata::correlations(string trainFName)
 	}
 	fcorr.close();
 
-	clog << "Correlation scores are saved into the file " << outFName << ".\n";
-
+	telog << "Correlation scores are saved into the file " << outFName << ".\n";
 }

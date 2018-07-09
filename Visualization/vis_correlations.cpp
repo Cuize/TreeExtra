@@ -15,15 +15,15 @@ int main(int argc, char* argv[])
 {
 	try{
 	//0. Set log file
-	LogStream clog;
-	clog << "\n-----\nvis_correlations ";
+	LogStream telog;
+	telog << "\n-----\nvis_correlations ";
 	for(int argNo = 1; argNo < argc; argNo++)
-		clog << argv[argNo] << " ";
-	clog << "\n\n";
+		telog << argv[argNo] << " ";
+	telog << "\n\n";
 	
 	if((argc > 1) && !string(argv[1]).compare("-version"))
 	{
-		clog << "TreeExtra version " << VERSION << "\n";
+		telog << "TreeExtra version " << VERSION << "\n";
 		return 0;
 	}
 

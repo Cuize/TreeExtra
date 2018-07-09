@@ -18,15 +18,15 @@ int main(int argc, char* argv[])
 {
 	try{
 	//0. Set log file
-	LogStream clog;
-	clog << "\n-----\nvis_effect ";
+	LogStream telog;
+	telog << "\n-----\nvis_effect ";
 	for(int argNo = 1; argNo < argc; argNo++)
-		clog << argv[argNo] << " ";
-	clog << "\n\n";
+		telog << argv[argNo] << " ";
+	telog << "\n\n";
 	
 	if((argc > 1) && !string(argv[1]).compare("-version"))
 	{
-		clog << "TreeExtra version " << VERSION << "\n";
+		telog << "TreeExtra version " << VERSION << "\n";
 		return 0;
 	}
 
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 	if(suffix.size())
 		in_suffix = "." + suffix;
 	string outFName = attrName + in_suffix + ".effect.txt";
-	clog << "Partial dependence function values are saved into the file " << outFName << ".\n";
+	telog << "Partial dependence function values are saved into the file " << outFName << ".\n";
 
 	}catch(TE_ERROR err){
 		te_errMsg((TE_ERROR)err);
