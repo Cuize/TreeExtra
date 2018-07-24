@@ -9,7 +9,7 @@
 
 #include <fstream>
 #include <sstream>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 //Deletes spaces from the beginning and from the end of the string
