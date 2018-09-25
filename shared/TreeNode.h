@@ -70,22 +70,22 @@ private:
 	void del();	
 
 	//returns several summaries of the prediction values set in this node
-	bool getStats(double& nodeV, double& nodeSum, double& realNodeV);
+	bool getStats(double& nodeV, double& nodeSum, double& squares, double& realNodeV);
 
 	//cleans training data out of a leaf
 	void makeLeaf(double nodeMean); 
 
 	//finds and sets a splitting info with the best MSE
-	bool setSplit(double nodeV, double nodeSum, double mu=0, int *attrIds = NULL);
+	bool setSplit(double nodeV, double nodeSum, double squares, double mu=0, int *attrIds = NULL);
 
 	//finds and sets a splitting info with the best MSE when missing values present in the data
-	bool setSplitMV(double nodeV, double nodeSum, double mu=0, int *attrIds = NULL);
+	bool setSplitMV(double nodeV, double nodeSum, double squares, double mu=0, int *attrIds = NULL);
 
 	//evaluates boolean split
-	double evalBool(SplitInfo& canSplit, double nodeV, double nodeSum);
+	double evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares);
 
 	//evaluates boolean split when missing values present in the data
-	double evalBoolMV(SplitInfo& canSplit, double nodeV, double nodeSum, double missV, double missSum);
+	double evalBoolMV(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double missV, double missSum);
 
 public:
 	CTreeNode*	left;		//pointer to the left child
