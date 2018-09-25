@@ -178,8 +178,8 @@ void CTreeNode::traverse(int itemNo, double inCoef, double& lOutCoef, double& rO
 bool CTreeNode::split(double alpha, double* pEntropy, double mu, int *attrIds)
 {	
 //1. check basic leaf conditions
-	double nodeV, nodeSum, realNodeV, squares;
-	bool StD0 = getStats(nodeV, nodeSum, realNodeV);
+	double nodeV, nodeSum, squares, realNodeV;
+	bool StD0 = getStats(nodeV, nodeSum, squares, realNodeV);
 
 	if((realNodeV / pData->getTrainV() < alpha) || StD0)
 	{
