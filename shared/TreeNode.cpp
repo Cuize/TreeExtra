@@ -403,18 +403,19 @@ void CTreeNode::makeLeaf(double nodeMean)
 //out: true, if best split found. false, if there were no splits
 
 bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double mu, int *attrIds)
-{
+{	
+	double variance = squares - nodeSum*nodeSum/nodeV
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 	{
 		int attr = (*pAttrs)[attrNo];
-		double factor = (1 - attrIds[attr])*mu; // 0<=mu<1 the eval will become eval/(1-factor)
+		double penalty = (1 - attrIds[attr])*mu; // 0<=mu<=1
 		if(pData->boolAttr(attr))	
 		{//boolean attribute
 			//there is exactly one split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
-			double eval = evalBool(boolSplit, nodeV, nodeSum, squares)/(1-factor);
+			double eval = evalBool(boolSplit, nodeV, nodeSum, squares) + penalty;
 			if(isnan(eval))
 			{//boolean attribute is not valid anymore, remove it
 				pAttrs->erase(pAttrs->begin() + attrNo);	
@@ -505,7 +506,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double mu
 					double sqErr1 =  - mean1 * sum1;
 					double sqErr2 =  - mean2 * sum2;
 
-					double eval = ( sqErr1 + sqErr2 + squares )/(1-factor);
+					double eval = (( sqErr1 + sqErr2 + squares )/variance) + penalty;
 			
 					//evaluate the split point, if it is the best (one of the best) so far, keep it
 					if(isnan(bestEval) || (eval < bestEval))
@@ -583,7 +584,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 	{
 		int attr = (*pAttrs)[attrNo];
-		double factor = (1 - attrIds[attr]) * mu; // eval will become eval/(1-factor)
+		//double factor = (1 - attrIds[attr]) * mu; // eval will become eval/(1-factor)
 		bool newSplits = false;	//true if any splits were added for this attribute
 
 		//collect info about missing values
@@ -607,7 +608,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 			double mean2 = missSum / missV;
 			double sqErr1 =  - 2 * mean1 * nmSum + nmV * mean1 * mean1;
 			double sqErr2 = - 2 * mean2 * missSum + missV * mean2 * mean2;
-			double eval = ( sqErr1 + sqErr2 )/(1-factor);
+			double eval = sqErr1 + sqErr2;
 			
 			//if it is the best (one of the best) so far, keep it
 			if(isnan(bestEval) || (eval < bestEval))
@@ -626,7 +627,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 		{//boolean attribute
 			//there is only one non-special split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
-			double eval = evalBoolMV(boolSplit, nodeV, nodeSum, squares, missV, missSum)/(1-factor);
+			double eval = evalBoolMV(boolSplit, nodeV, nodeSum, squares, missV, missSum);
 			if(!isnan(eval))
 			{//save if this is one of the best splits
 				newSplits = true;
@@ -712,7 +713,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 					double sqErr2 = - 2 * mean2 * sum2 + volume2 * mean2 * mean2;
 					double missSqErr =  - 2 * missPred * missSum + missV * missPred * missPred; 
 
-					double eval = ( sqErr1 + sqErr2 + missSqErr )/(1-factor)  ;
+					double eval = sqErr1 + sqErr2 + missSqErr;
 			
 					//evaluate the split point, if it is the best (one of the best) so far, keep it
 					if(isnan(bestEval) || (eval < bestEval))
@@ -801,7 +802,7 @@ double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, do
 
 	canSplit.missingL = volume1 / nodeV; 
 
-	return sqErr1 + sqErr2 + squares;
+	return (sqErr1 + sqErr2 + squares)/(squares - nodeSum*nodeSum/nodeV);
 }
 
 //Calculates short sum of squared errors of the boolean split for the data with missing values. Does not require sorting.
