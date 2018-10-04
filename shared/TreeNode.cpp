@@ -404,7 +404,7 @@ void CTreeNode::makeLeaf(double nodeMean)
 
 bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double mu, int *attrIds)
 {	
-	double variance = squares - nodeSum*nodeSum/nodeV
+	double variance = squares - nodeSum*nodeSum/nodeV;
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
