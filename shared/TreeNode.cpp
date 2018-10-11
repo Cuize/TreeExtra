@@ -415,7 +415,8 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double mu
 		{//boolean attribute
 			//there is exactly one split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
-			double eval = evalBool(boolSplit, nodeV, nodeSum, squares) + penalty;
+			double sqErrRatioBool = evalBool(boolSplit, nodeV, nodeSum, squares);
+			double eval = sqErrRatioBool + penalty/(1 - sqErrRatioBool);
 			if(isnan(eval))
 			{//boolean attribute is not valid anymore, remove it
 				pAttrs->erase(pAttrs->begin() + attrNo);	
@@ -506,7 +507,9 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double mu
 					double sqErr1 =  - mean1 * sum1;
 					double sqErr2 =  - mean2 * sum2;
 
-					double eval = (( sqErr1 + sqErr2 + squares )/variance) + penalty;
+					double sqErrRatio = ( sqErr1 + sqErr2 + squares )/variance;
+
+					double eval = sqErrRatio + penalty/(1 - sqErrRatio) ;
 			
 					//evaluate the split point, if it is the best (one of the best) so far, keep it
 					if(isnan(bestEval) || (eval < bestEval))
