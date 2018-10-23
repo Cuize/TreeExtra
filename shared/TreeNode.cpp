@@ -781,7 +781,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 //	in-out: canSplit - info about the splitting being evaluated
 //	in: nodeV - size (volume) of the node train subset
 //  in: nodeSum - sum of responses of the cases in node train subset
-double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar,)
+double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar)
 {
 	double volume1 = 0;
 	double sum1 = 0;
