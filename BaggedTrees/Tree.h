@@ -21,7 +21,7 @@ public:
 #endif
 
 	//constructor
-	CTree(double alpha = 0,double mu = 0,int *attrIds = NULL); 
+	CTree(double alpha = 0,double mu = 0,int *attrIds = NULL,double variance = 0); 
 
 	//grows a tree, increases attribute counts
 	void grow(bool doFS, idpairv& attrCounts);
@@ -54,6 +54,7 @@ private:
 	double alpha;		//training parameter: controls size of the tree
 	double mu;          //training parameter: penalty on new split variable
 	int *attrIds;        //used features
+	double variance;      // variance (sum of square error) of the root
 };
 
 #ifndef _WIN32 
@@ -61,9 +62,9 @@ private:
 struct JobData
 {	
 	JobData(nodeip in_curNH, nodehstack* in_pNodes, TCondition* in_pNodesCond, int* in_pToDoN, 
-			idpairv* in_pAttrCounts, double in_b, double in_H, double muIn, int *attrIdsIn):
+			idpairv* in_pAttrCounts, double in_b, double in_H, double muIn, int *attrIdsIn, double varianceIn):
 	curNH(in_curNH), pNodes(in_pNodes), pNodesCond(in_pNodesCond), pToDoN(in_pToDoN), 
-	pAttrCounts(in_pAttrCounts), b(in_b), H(in_H), mu(muIn), attrIds(attrIdsIn) {}
+	pAttrCounts(in_pAttrCounts), b(in_b), H(in_H), mu(muIn), attrIds(attrIdsIn), variance(varianceIn) {}
 
 	nodeip curNH; 
 	nodehstack* pNodes;
@@ -72,6 +73,7 @@ struct JobData
 	double alpha;
 	double mu;
 	int *attrIds;
+	double variance;
 	idpairv* pAttrCounts;
 	double b;
 	double H;
