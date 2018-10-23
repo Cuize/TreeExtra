@@ -158,7 +158,7 @@ void CTreeNode::resetRoot(doublev& othpreds)
 		sums += itemIt->response;
 		square += (itemIt->response)*(itemIt->response);
 	}
-	variance = square - count*sums*sums;
+	variance = square - sums*sums/count;
 }
 
 //This function is used for prediction. It passes the case from the parent to child node(s).
