@@ -203,6 +203,7 @@ int main(int argc, char* argv[])
 		tree.resetRoot(trainPreds);
 		idpairv stub;
 		tree.grow(doFS, attrCounts);
+		cout << "root variance: " << tree.getVaraince() << endl;
 
 		//update predictions
 		for(int itemNo = 0; itemNo < trainN; itemNo++)

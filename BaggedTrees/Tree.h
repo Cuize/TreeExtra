@@ -23,6 +23,8 @@ public:
 	//constructor
 	CTree(double alpha = 0,double mu = 0,int *attrIds = NULL,double variance = 0); 
 
+	double getVariance(){return variance;}
+
 	//grows a tree, increases attribute counts
 	void grow(bool doFS, idpairv& attrCounts);
 
