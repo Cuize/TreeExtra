@@ -43,10 +43,10 @@ public:
 	void resetRoot(doublev& othpreds);
 
 private:
-    INDdata* pData;	//data access pointer
+    static INDdata* pData;	//data access pointer
 
 #ifndef _WIN32
-    TThreadPool* pPool;	//thread pool pointer
+    static TThreadPool* pPool;	//thread pool pointer
 	TCondition nodesCond;	//condition, used for multithreading control 
 #endif
 
