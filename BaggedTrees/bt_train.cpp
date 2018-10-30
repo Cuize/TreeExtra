@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
 
 //2. Load data
 	INDdata data(ti.trainFName.c_str(), ti.validFName.c_str(), ti.testFName.c_str(), 
-				 ti.attrFName.c_str(), doOut);
+				 ti.attrFName.c_str(), "", doOut);
 	CTree::setData(data);
 	CTreeNode::setData(data);
 
@@ -222,8 +222,8 @@ int main(int argc, char* argv[])
 		if(doOut)
 			cout << "Iteration " << bagNo + 1 << " out of " << ti.bagN << endl;
 
-		data.newBag();
-		CTree tree(ti.alpha,0,attrIds);
+		data.newBag(0); //need modification for multitask
+		CTree tree(ti.alpha,0,NULL,0,NULL); //need modification for multitask
 		tree.setRoot();
 		tree.grow(doFS, attrCounts);
 		tree.save(modelFName.c_str());
@@ -293,34 +293,34 @@ int main(int argc, char* argv[])
 		usedAttrN+=attrIds[i];
 	}
 
-	//output feature selection results
-	if(doFS)
-	{
-		if(topAttrN > attrN)
-			topAttrN = attrN;
+	// //output feature selection results
+	// if(doFS)
+	// {
+	// 	if(topAttrN > attrN)
+	// 		topAttrN = attrN;
 
-		fstream ffeatures("feature_scores.txt", ios_base::out);	
-		ffeatures << "Number of features used: " << usedAttrN << "\n";
-		ffeatures << "Top " << topAttrN << " features\n";
-		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-			ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t" 
-				<< attrCounts[attrNo].second / ti.bagN / itemN << "\n";
-		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
-		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-			ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
-		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
-		ffeatures.close();
+	// 	fstream ffeatures("feature_scores.txt", ios_base::out);	
+	// 	ffeatures << "Number of features used: " << usedAttrN << "\n";
+	// 	ffeatures << "Top " << topAttrN << " features\n";
+	// 	for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+	// 		ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t" 
+	// 			<< attrCounts[attrNo].second / ti.bagN / itemN << "\n";
+	// 	ffeatures << "\n\nColumn numbers (beginning with 1)\n";
+	// 	for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+	// 		ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
+	// 	ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
+	// 	ffeatures.close();
 
-		//output new attribute file
-		for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
-			data.ignoreAttr(attrCounts[attrNo].first);
-		data.outAttr(ti.attrFName);
-	}
+	// 	//output new attribute file
+	// 	for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
+	// 		data.ignoreAttr(attrCounts[attrNo].first);
+	// 	data.outAttr(ti.attrFName);
+	// }
 
-	if(data.getHasActiveMV())
-		telog << "Warning: the data has missing values in active attributes, correlations can not be calculated.\n\n";
-	else
-		data.correlations(ti.trainFName);
+	// if(data.getHasActiveMV())
+	// 	telog << "Warning: the data has missing values in active attributes, correlations can not be calculated.\n\n";
+	// else
+	// 	data.correlations(ti.trainFName);
 
 	}catch(TE_ERROR err){
 		te_errMsg((TE_ERROR)err);

@@ -102,8 +102,8 @@ int main(int argc, char* argv[])
 //2. Load data
 	INDdata data(ti.trainFName.c_str(), ti.validFName.c_str(), ti.testFName.c_str(), 
 				 ti.attrFName.c_str(), "" ,doOut);
-	//CTree::setData(data);
-	//CTreeNode::setData(data);
+	CTree::setData(data);
+	CTreeNode::setData(data);
 
 //3. Open model file
 	fstream fmodel(modelFName.c_str(), ios_base::binary | ios_base::in);
