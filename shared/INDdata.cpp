@@ -17,7 +17,7 @@
 //in the attr file.
 //filenames may be empty strings, if correspondent data is not provided
 INDdata::INDdata(const char* trainFName, const char* validFName, const char* testFName,
-	const char* attrFName, bool doOut)
+	const char* attrFName, string task_var, bool doOut): task(task_var)
 {
 	LogStream telog;
 
@@ -114,6 +114,10 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		getLineExt(fattr, buf);
 	}
 	fattr.close();
+
+	int taskId = getAttrId(task);
+	if(taskId != -1)
+		ignoreAttrs.insert(taskId); // multitask Id feature should not be included
 	
 	int activeAttrN = attrN - (int)ignoreAttrs.size();
 	telog << attrN << " attributes\n" << activeAttrN << " active attributes\n\n";
@@ -132,7 +136,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		fstream fin;
 		fin.open(trainFName, ios_base::in);
 		if(fin.fail()) 
-			throw OPEN_TRAIN_ERR;
+			throw OPEN_train_ERR;
 		 
 		hasMV = false;
 		hasActiveMV = false;
@@ -152,7 +156,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 				readData(buf, fin.gcount(), item, colN);
 			
 				if(isnan(item[tarColNo]))
-					throw MV_CLASS_TRAIN_ERR;
+					throw MV_CLASS_train_ERR;
 				trainTar.push_back(item[tarColNo]);
 			
 				if(weightColNo != -1)
@@ -187,7 +191,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		trainN = caseNo;
 		trainV = trainN;
 		if(trainN == 0)
-			throw TRAIN_EMPTY_ERR;
+			throw train_EMPTY_ERR;
 		if(weightColNo != -1)
 		{
 			double trainSum = 0;
@@ -202,7 +206,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			}
 
 		}
-		double trainStD = getTarStD(TRAIN);
+		double trainStD = getTarStD(train);
 		telog << trainN << " points in the train set, std. dev. of " << tarName << " values = " << trainStD 
 			<< "\n\n"; 
 		fin.close();
@@ -223,9 +227,6 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			telog << "Warning: active attributes have missing values. More information in missing_values.txt.\n\n";
 		}
 
-		//initialize bootstrap (bag of data)
-		bootstrap.resize(trainN); 
-		newBag();	
 	}
 	else //no train set
 		trainN = 0;
@@ -317,6 +318,12 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 	}
 	else	//no test set
 		testN = 0;
+
+	getValues() //fill the task to rowid maps (for multitask)
+	//initialize bootstrap (bag of data)
+	// bootstrap.resize(trainN); 
+	// newBag();	
+
 }
 
 //Gets a line of text, returns a vector with data points 
@@ -332,7 +339,7 @@ void INDdata::readData(char* buf, streamsize buflen, floatv& retv, int retvlen)
 	for(int chNo = 0; chNo < buflen; chNo ++)
 		if(buf[chNo] != ' ')
 			line.push_back(buf[chNo]);
-
+setroot
 	retv.resize(retvlen, 0);
 	stringstream itemstr(line.c_str());
 	string singleItem;
@@ -365,36 +372,39 @@ void INDdata::readData(char* buf, streamsize buflen, floatv& retv, int retvlen)
 }
 
 //Puts bootstrapped ids (indices) of train set data points into bootstrap vector
-void INDdata::newBag(void)
+void INDdata::newBag(int taskId)
 {
+	int trainSubN = task2TrainRows[taskId].size();
+	bootstrap.clear(); 
+	bootstrap.resize(trainSubN);
 	boolv oobInx(trainN, true); //true if item is not in current bag
 
-	for(int itemNo = 0; itemNo < trainN; itemNo++)
+	for(int itemNo = 0; itemNo < trainSubN; itemNo++)
 	{//put a new item into bag
 		double randCoef = rand_coef();
-		int nextItem = (int) ((trainN - 1) * randCoef);
+		int nextItem = task2TrainRows[taskId][(int) ((trainSubN - 1) * randCoef)];
 		bootstrap[itemNo] = nextItem;
 		oobInx[nextItem] = false;
 	}
 
 	//calculate number of oob cases
 	oobN = 0;
-	for(int itemNo = 0; itemNo < trainN; itemNo++)
-		if(oobInx[itemNo])
+	for(int itemNo = 0; itemNo < trainSubN; itemNo++)
+		if(oobInx[task2TrainRows[taskId][itemNo]])
 			oobN++;
 		
 	if(oobN == 0)
-		newBag(); //we need out of bag data, so try again
+		newBag(taskId); //we need out of bag data, so try again
 
 	//fill out of bag data
 	oobData.resize(oobN);
 	oobTar.resize(oobN);
 	int oobNo = 0;
-	for(int itemNo = 0; itemNo < trainN; itemNo++)
-		if(oobInx[itemNo])
+	for(int itemNo = 0; itemNo < trainSubN; itemNo++)
+		if(oobInx[task2TrainRows[taskId][itemNo]])
 		{
-			oobData[oobNo] = itemNo;
-			oobTar[oobNo] = trainTar[itemNo];
+			oobData[oobNo] = task2TrainRows[taskId][itemNo];
+			oobTar[oobNo] = trainTar[task2TrainRows[taskId][itemNo]];
 			oobNo++;
 		}
 
@@ -403,11 +413,11 @@ void INDdata::newBag(void)
 }
 
 //subsampling without replacement
-void INDdata::newSample(int sampleN)
+void INDdata::newSample(int sampleN,int taskId)
 {
-	intv inxv(trainN);
-	for(int i = 0; i < trainN; i++)
-		inxv[i] = i;
+	intv inxv = task2TrainRows[taskId];
+	// for(int i = 0; i < trainN; i++)
+	// 	inxv[i] = i;
 
 	bootstrap.clear();
 	bootstrap.resize(sampleN);
@@ -415,9 +425,9 @@ void INDdata::newSample(int sampleN)
 	for(int i = 0; i < sampleN; i++)
 	{
 		double randCoef = rand_coef();
-		int nextItem = (int) ((trainN - 1 - i) * randCoef);
+		int nextItem = (int) ((inxv.size()- 1 - i) * randCoef);
 		bootstrap[i] = inxv[nextItem];
-		inxv[nextItem] = inxv[trainN - 1 - i];
+		inxv[nextItem] = inxv[inxv.size() - 1 - i];
 	}
 
 	//create versions of data sorted by values of attributes
@@ -496,7 +506,7 @@ int INDdata::getOutOfBag(intv& oobData_out, doublev& oobTar_out)
 //Gets validaton data info (validTar, validN)
 int INDdata::getTargets(doublev& targets, DATA_SET dset)
 {
-	if(dset == TRAIN)
+	if(dset == train)
 	{
 		targets = trainTar;
 		return trainN;
@@ -515,7 +525,7 @@ int INDdata::getTargets(doublev& targets, DATA_SET dset)
 
 //Fills itemSet with ids and responses of data points in the current bag
 void INDdata::getCurBag(ItemInfov& itemSet)
-{ 
+{	//newBag(taskId); // initialize bootstrap;
 	int sampleN = (int)bootstrap.size();
 	itemSet.resize(sampleN);
 
@@ -531,6 +541,7 @@ void INDdata::getCurBag(ItemInfov& itemSet)
 //Returns ids and responses of data points in the current bag
 int INDdata::getCurBag(intv& bagData, doublev& bagTar)
 { 
+	//newBag(taskId); // initialize bootstrap;
 	int sampleN = (int)bootstrap.size();
 	bagData.resize(sampleN);
 	bagTar.resize(sampleN);
@@ -556,13 +567,15 @@ double INDdata::getValue(int itemNo, int attrId, DATA_SET dset)
 {
 	if(attrId >= attrN)
 		throw ATTR_ID_ERR;
-	if(dset == TRAIN)
+	if(dset == train)
 		return train[itemNo][attrId];
 	else if(dset == TEST)
 		return test[itemNo][attrId];
 	else //if(dset == VALID)
 		return valid[itemNo][attrId];
 }
+
+
 
 //checks if target values are present for test data 
 bool INDdata::hasTrueTest()
@@ -583,7 +596,7 @@ string INDdata::getAttrName(int attrId)
 double INDdata::getTarStD(DATA_SET ds)
 {
 	doublev* ptargets = NULL;
-	if(ds == TRAIN)
+	if(ds == train)
 		ptargets = &trainTar;	
 	if(ds == TEST)
 		ptargets = &testTar;
@@ -660,6 +673,41 @@ void INDdata::getValues(int attr1Id, int attr2Id, ddpairv& values)
 
 	sort(values.begin(), values.end(), lessNaNP);
 }
+
+//gets all value to rowid map for a specific attribute(task) in a dataset (for multitask)
+void INDdata::getValues()
+{
+
+
+	int taskId = getAttrId(task);
+
+
+
+	for(int itemNo = 0; itemNo < trainN; itemNo++){
+		int tmp = train[itemNo][taskId];
+		trainTask.push_back(tmp);
+		task2TrainRows[tmp].push_back(itemNo);
+	}
+
+
+	for(int itemNo = 0; itemNo < validN; itemNo++){
+		int tmp = valid[itemNo][taskId];
+		validTask.push_back(tmp);
+		task2ValidRows[tmp].push_back(itemNo);
+	}
+
+	for(int itemNo = 0; itemNo < testN; itemNo++){
+		int tmp = test[itemNo][taskId];
+		testTask.push_back(tmp);
+		task2TestRows[tmp].push_back(itemNo);
+	}
+
+
+
+
+}
+	
+
 
 //inserts a new data point into the test set, returns its id (number)
 //in: values is a vector of (attrId, attrVal) pairs
@@ -776,105 +824,106 @@ int INDdata::getQuantiles(int attrId, int& quantN, dipairv& valCounts)
 }
 
 //calculates and outputs correlation scores between active attributes based on the training set
-void INDdata::correlations(string trainFName)
-{
-	LogStream telog;
 
-	//get a list of defined attributes
-	intv attrs;
-	getActiveAttrs(attrs);
-	size_t activeN = attrs.size();
+// void INDdata::correlations(string trainFName)
+// {
+// 	LogStream telog;
 
-	size_t itemN = getTrainN();
+// 	//get a list of defined attributes
+// 	intv attrs;
+// 	getActiveAttrs(attrs);
+// 	size_t activeN = attrs.size();
 
-	//reserve space for sortedItems
-	sortedItems.clear();
-	sortedItems.resize(activeN);
-	for(size_t attrNo = 0; attrNo < activeN; attrNo++)
-		sortedItems[attrNo].reserve(itemN);
+// 	size_t itemN = gettrainN();
 
-	//fill sortedItems 
-	for(size_t attrNo = 0; attrNo < activeN; attrNo++)
-	{
-		for(size_t itemNo = 0; itemNo < itemN; itemNo++)
-		{
-			float value = train[bootstrap[itemNo]][attrs[attrNo]];
-			if(isnan(value))
-				throw CORR_MV_ERR;
+// 	//reserve space for sortedItems
+// 	sortedItems.clear();
+// 	sortedItems.resize(activeN);
+// 	for(size_t attrNo = 0; attrNo < activeN; attrNo++)
+// 		sortedItems[attrNo].reserve(itemN);
 
-			sortedItems[attrNo].push_back(fipair(value, itemNo));
-		}
-		sort(sortedItems[attrNo].begin(), sortedItems[attrNo].end());
+// 	//fill sortedItems 
+// 	for(size_t attrNo = 0; attrNo < activeN; attrNo++)
+// 	{
+// 		for(size_t itemNo = 0; itemNo < itemN; itemNo++)
+// 		{
+// 			float value = train[bootstrap[itemNo]][attrs[attrNo]];
+// 			if(isnan(value))
+// 				throw CORR_MV_ERR;
+
+// 			sortedItems[attrNo].push_back(fipair(value, itemNo));
+// 		}
+// 		sort(sortedItems[attrNo].begin(), sortedItems[attrNo].end());
 		
-		//replace actual values with ranks. Ties get average rank.
-		int lastDone = -1;
-		float curVal = sortedItems[attrNo][0].first;
-		for(size_t itemNo = 1; itemNo <= itemN; itemNo++)
-			if((itemNo == itemN) || (sortedItems[attrNo][itemNo].first != curVal))
-			{
-				if(itemNo != itemN)
-					curVal = sortedItems[attrNo][itemNo].first;
-				float rank = (float)((lastDone + itemNo) / 2.0 + 1);
-				for(size_t fillNo = lastDone + 1; fillNo < itemNo; fillNo++)
-					sortedItems[attrNo][fillNo].first = rank;
-				lastDone = itemNo - 1;
-			}
+// 		//replace actual values with ranks. Ties get average rank.
+// 		int lastDone = -1;
+// 		float curVal = sortedItems[attrNo][0].first;
+// 		for(size_t itemNo = 1; itemNo <= itemN; itemNo++)
+// 			if((itemNo == itemN) || (sortedItems[attrNo][itemNo].first != curVal))
+// 			{
+// 				if(itemNo != itemN)
+// 					curVal = sortedItems[attrNo][itemNo].first;
+// 				float rank = (float)((lastDone + itemNo) / 2.0 + 1);
+// 				for(size_t fillNo = lastDone + 1; fillNo < itemNo; fillNo++)
+// 					sortedItems[attrNo][fillNo].first = rank;
+// 				lastDone = itemNo - 1;
+// 			}
 
-		//re-sort by itemId
-		sort(sortedItems[attrNo].begin(), sortedItems[attrNo].end(), ltSecond);
-	}
+// 		//re-sort by itemId
+// 		sort(sortedItems[attrNo].begin(), sortedItems[attrNo].end(), ltSecond);
+// 	}
 
-	//calculate Spearman's rank correlation values
-	double coef = 6.0 / (itemN * ((double)itemN * itemN - 1.0));
+// 	//calculate Spearman's rank correlation values
+// 	double coef = 6.0 / (itemN * ((double)itemN * itemN - 1.0));
 
-	doublev stub(activeN, 0);
-	doublevv correlations(activeN, stub);
+// 	doublev stub(activeN, 0);
+// 	doublevv correlations(activeN, stub);
 
-	ssdtriplev corrv;
-	corrv.reserve(activeN * (activeN - 1));
+// 	ssdtriplev corrv;
+// 	corrv.reserve(activeN * (activeN - 1));
 
-	for(size_t attrNo1 = 0; attrNo1 < activeN; attrNo1++)
-		for(size_t attrNo2 = 0; attrNo2 < activeN; attrNo2++)
-			if(attrNo1 > attrNo2)
-				correlations[attrNo1][attrNo2] = correlations[attrNo2][attrNo1];
-			else if(attrNo1 == attrNo2)
-				correlations[attrNo1][attrNo2] = QNAN;
-			else
-			{
-				double corr = 0;
-				for(size_t itemNo = 0; itemNo < itemN; itemNo++)
-				{
-					double d = sortedItems[attrNo1][itemNo].first - sortedItems[attrNo2][itemNo].first;
-					corr += coef * d * d;
-				}
-				correlations[attrNo1][attrNo2] = 1 - corr;
-				corrv.push_back(ssdtriple(sspair(getAttrName(attrs[attrNo1]), getAttrName(attrs[attrNo2])), 1 - corr));
-			}
+// 	for(size_t attrNo1 = 0; attrNo1 < activeN; attrNo1++)
+// 		for(size_t attrNo2 = 0; attrNo2 < activeN; attrNo2++)
+// 			if(attrNo1 > attrNo2)
+// 				correlations[attrNo1][attrNo2] = correlations[attrNo2][attrNo1];
+// 			else if(attrNo1 == attrNo2)
+// 				correlations[attrNo1][attrNo2] = QNAN;
+// 			else
+// 			{
+// 				double corr = 0;
+// 				for(size_t itemNo = 0; itemNo < itemN; itemNo++)
+// 				{
+// 					double d = sortedItems[attrNo1][itemNo].first - sortedItems[attrNo2][itemNo].first;
+// 					corr += coef * d * d;
+// 				}
+// 				correlations[attrNo1][attrNo2] = 1 - corr;
+// 				corrv.push_back(ssdtriple(sspair(getAttrName(attrs[attrNo1]), getAttrName(attrs[attrNo2])), 1 - corr));
+// 			}
 
-	//open output file
-	string outFName = /*beforeLastDot(trainFName) + "." + */"correlations.txt";
-	fstream fcorr(outFName.c_str(), ios_base::out);
+// 	//open output file
+// 	string outFName = /*beforeLastDot(trainFName) + "." + */"correlations.txt";
+// 	fstream fcorr(outFName.c_str(), ios_base::out);
 
-	//output in the sorted list of triples format
-	sort(corrv.begin(), corrv.end(), gtAbsThird);
-	for(size_t pairNo = 0; pairNo < corrv.size(); pairNo++)
-		fcorr << corrv[pairNo].first.first << "\t" << corrv[pairNo].first.second << "\t" << corrv[pairNo].second << endl;
+// 	//output in the sorted list of triples format
+// 	sort(corrv.begin(), corrv.end(), gtAbsThird);
+// 	for(size_t pairNo = 0; pairNo < corrv.size(); pairNo++)
+// 		fcorr << corrv[pairNo].first.first << "\t" << corrv[pairNo].first.second << "\t" << corrv[pairNo].second << endl;
 
 
-	// output in the table format
-	fcorr << "\n" << QNAN;
-	for(size_t attrNo = 0; attrNo < activeN; attrNo++)
-		fcorr << "\t" << getAttrName(attrs[attrNo]);
-	fcorr << endl;
+// 	// output in the table format
+// 	fcorr << "\n" << QNAN;
+// 	for(size_t attrNo = 0; attrNo < activeN; attrNo++)
+// 		fcorr << "\t" << getAttrName(attrs[attrNo]);
+// 	fcorr << endl;
 
-	for(size_t attrNo1 = 0; attrNo1 < activeN; attrNo1++)
-	{
-		fcorr << getAttrName(attrs[attrNo1]); 
-		for(size_t attrNo2 = 0; attrNo2 < activeN; attrNo2++)
-			fcorr << "\t" << correlations[attrNo1][attrNo2];
-		fcorr << endl;
-	}
-	fcorr.close();
+// 	for(size_t attrNo1 = 0; attrNo1 < activeN; attrNo1++)
+// 	{
+// 		fcorr << getAttrName(attrs[attrNo1]); 
+// 		for(size_t attrNo2 = 0; attrNo2 < activeN; attrNo2++)
+// 			fcorr << "\t" << correlations[attrNo1][attrNo2];
+// 		fcorr << endl;
+// 	}
+// 	fcorr.close();
 
-	telog << "Correlation scores are saved into the file " << outFName << ".\n";
-}
+// 	telog << "Correlation scores are saved into the file " << outFName << ".\n";
+// }

@@ -38,7 +38,7 @@ public:
 		}
 		double h = curNH.second;
 		double curAlpha = (pJD->H == 0) ? 1 : pow(2, - ( pJD->b +  pJD->H) * h /  pJD->H +  pJD->b);
-		bool notLeaf = curNH.first->split(curAlpha, pEntropy, pJD->mu, pJD->attrIds);
+		bool notLeaf = curNH.first->split(curAlpha, pEntropy, pJD->mu, pJD->pUsedIdv, pJD->smu, pJD->pUsedGroup);
 		
 		nodesCond.Lock();
 		if(notLeaf)
@@ -64,7 +64,7 @@ public:
 };
 #endif
 
-CTree::CTree(double alphaIn,double muIn, int* attrIdsIn): alpha(alphaIn), mu(muIn), attrIds(attrIdsIn), root()
+CTree::CTree(double alphaIn = 0 ,double muIn = 0 ,intv* pUsedIdvIn = NULL, double smuIn = 0, intv* pUsedGroupIn = NULL): alpha(alphaIn), mu(muIn), pUsedIdv(pUsedIdvIn), smu(smuIn), pUsedGroup(pUsedGroupIn), root()
 {
 }
 
@@ -99,7 +99,7 @@ void CTree::grow(bool doFS, idpairv& attrCounts)
 		}	
 		double h = curNH.second;
 		double curAlpha = (H == 0) ? 1 : pow(2, - (b + H) * h / H + b);
-		bool notLeaf = curNH.first->split(curAlpha, pEntropy, mu, attrIds);
+		bool notLeaf = curNH.first->split(curAlpha, pEntropy, mu, pUsedIdvIn,smu,pUsedGroup);
 	
 		if(notLeaf)
 		{//process child nodes of this node
@@ -129,7 +129,7 @@ void CTree::grow(bool doFS, idpairv& attrCounts)
 			idpairv* pAttrCounts = NULL;
 			if(doFS)
 				pAttrCounts = &attrCounts;
-			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, attrIds);
+			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, pUsedIdvIn, smu, pUsedGroup);
 			pPool->Run(new CNodeSplitJob(), pJD, true);
 		}
 		else

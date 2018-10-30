@@ -56,7 +56,7 @@ public:
 	void traverse(int itemNo, double coef, double& ltCoef, double& rtCoef, DATA_SET dset);
 
 	//splits the node; grows two offsprings 
-	bool split(double alpha, double* pEntropy = NULL, double mu=0, int *attrIds = NULL);
+	bool split(double alpha, double* pEntropy = NULL, double mu=0, intv* pUsedIdv = NULL, double smu = 0, intv* pUsedGroup = NULL);
 
 	//saves the node into a binary file
 	void save(fstream& fsave);
@@ -76,10 +76,10 @@ private:
 	void makeLeaf(double nodeMean); 
 
 	//finds and sets a splitting info with the best MSE
-	bool setSplit(double nodeV, double nodeSum, double mu=0, int *attrIds = NULL);
+	bool setSplit(double nodeV, double nodeSum, double mu=0, intv* pUsedIdv = NULL, double smu = 0, intv* pUsedGroup = NULL);
 
 	//finds and sets a splitting info with the best MSE when missing values present in the data
-	bool setSplitMV(double nodeV, double nodeSum, double mu=0, int *attrIds = NULL);
+	bool setSplitMV(double nodeV, double nodeSum, double mu=0, intv* pUsedIdv = NULL, double smu = 0, intv* pUsedGroup = NULL);
 
 	//evaluates boolean split
 	double evalBool(SplitInfo& canSplit, double nodeV, double nodeSum);

@@ -22,6 +22,11 @@ public:
 	bool useCoef(){return hasActiveMV || (weightColNo != -1);}
 	bool getHasActiveMV(){return hasActiveMV;}
 
+	//for multitask
+	int getTaskN(){return task2TrainRows.size();}
+	iivmap getTask2TrainMap(){return task2TrainRows;}
+	iivmap getTask2ValidMap(){return task2ValidRows;}
+
 //untrivial get functions
 
 	//gets attrID by its name
@@ -76,10 +81,10 @@ public:
 	void useAttr(int attrId);
 
 	//replaces bootstrap in the bag
-	void newBag(void);
+	void newBag(int taskId);
 
 	//subsampling without replacement
-	void newSample(int sampleN);
+	void newSample(int sampleN, int taskId);
 
 	//inserts a new data point into the data set
 	int addTestItem(idpairv& values); 
@@ -94,10 +99,10 @@ public:
 	void getValues(int attrId, doublev& values);
 
 	//gets all value to rowid map for a specific attribute(task) in a dataset (for multitask)
-	void getValues(int attrId, DATA_SET dset, str2intv& maps);
+	void getValues();
 
-	//calculates and outputs correlation scores between active attributes based on the training set
-	void correlations(string trainFName);
+	// //calculates and outputs correlation scores between active attributes based on the training set
+	// void correlations(string trainFName);
 
 private:
 	//gets a line of text, returns a vector with data points
