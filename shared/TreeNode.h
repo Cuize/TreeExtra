@@ -16,7 +16,7 @@ class CTreeNode
 private:
     static INDdata* pData;
 public:
-	//initialize data pointer
+	//initialize static data pointer
 	static void setData(INDdata& data){pData = &data;}
 
 public:
