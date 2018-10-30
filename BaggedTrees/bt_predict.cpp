@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 
 //2. Load data
 	INDdata data(ti.trainFName.c_str(), ti.validFName.c_str(), ti.testFName.c_str(), 
-				 ti.attrFName.c_str(), doOut);
+				 ti.attrFName.c_str(), "" ,doOut);
 	CTree::setData(data);
 	CTreeNode::setData(data);
 
