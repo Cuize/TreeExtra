@@ -400,7 +400,7 @@ void CTreeNode::makeLeaf(double nodeMean)
 	// nodeSum - sum of response values in the training subset
 //out: true, if best split found. false, if there were no splits
 
-bool CTreeNode::setSplit(double nodeV, double nodeSum, int mu, intv* pUsedIdv , int smu , intv* pUsedGroup)
+bool CTreeNode::setSplit(double nodeV, double nodeSum, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup)
 {
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
@@ -575,7 +575,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, int mu, intv* pUsedIdv , 
 	//nodeV - sum of squared coefficients
 	//nodeSum - sum of predictions respectively multiplied by squared coefficients
 //out: true, if best split found. false, if there were no splits
-bool CTreeNode::setSplitMV(double nodeV, double nodeSum, int mu, intv* pUsedIdv , int smu , intv* pUsedGroup)
+bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup)
 {
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
