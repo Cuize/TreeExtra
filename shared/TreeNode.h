@@ -17,7 +17,7 @@ private:
     static INDdata* pData;
 public:
 	//initialize data pointer
-	void setData(INDdata& data){pData = &data;}
+	static void setData(INDdata& data){pData = &data;}
 
 public:
 	//constructor
