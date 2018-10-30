@@ -64,7 +64,7 @@ public:
 };
 #endif
 
-CTree::CTree(double alphaIn = 0 ,double muIn = 0 ,intv* pUsedIdvIn = NULL, double smuIn = 0, intv* pUsedGroupIn = NULL): alpha(alphaIn), mu(muIn), pUsedIdv(pUsedIdvIn), smu(smuIn), pUsedGroup(pUsedGroupIn), root()
+CTree::CTree(double alphaIn, double muIn, intv* pUsedIdvIn, double smuIn, intv* pUsedGroupIn): alpha(alphaIn), mu(muIn), pUsedIdv(pUsedIdvIn), smu(smuIn), pUsedGroup(pUsedGroupIn), root()
 {
 }
 
@@ -129,7 +129,7 @@ void CTree::grow(bool doFS, idpairv& attrCounts)
 			idpairv* pAttrCounts = NULL;
 			if(doFS)
 				pAttrCounts = &attrCounts;
-			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, pUsedIdvIn, smu, pUsedGroup);
+			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, pUsedIdv, smu, pUsedGroup);
 			pPool->Run(new CNodeSplitJob(), pJD, true);
 		}
 		else

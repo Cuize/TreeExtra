@@ -14,10 +14,10 @@ class CTree
 {
 public:
 	//set function for static data pointer
-    void setData(INDdata& data){pData = &data;}
+    static void setData(INDdata& data){pData = &data;}
 
 #ifndef _WIN32
-	void setPool(TThreadPool& pool){pPool = &pool;}
+	static void setPool(TThreadPool& pool){pPool = &pool;}
 #endif
 
 	//constructor
