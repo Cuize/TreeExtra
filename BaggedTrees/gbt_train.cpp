@@ -3,7 +3,7 @@
 
 //gbt_train -t _train_set_ -v _validation_set_ -r _attr_file_ 
 //[-a _alpha_value_] [-mu _mu_value_] [-n _boosting_iterations_] [-i _init_random_] [-c rms|roc]
-// [-sh _shrinkage_ ] [-sub _subsampling_] | -version
+// [-sh _shrinkage_ ] [-sub _subsampling_] [-multi _task_variable_name_] [-smu _shared_mu_]  | -version
 
 #include "Tree.h"
 #include "functions.h"
@@ -86,6 +86,8 @@ int main(int argc, char* argv[])
 			ti.alpha = atofExt(argv[argNo + 1]);
 		else if(!args[argNo].compare("-mu"))
 			ti.mu = atofExt(argv[argNo + 1]); 
+        else if(!args[argNo].compare("-smu"))
+			ti.smu = atofExt(argv[argNo + 1]); 
 		else if(!args[argNo].compare("-n"))
 			treeN = atoiExt(argv[argNo + 1]);
 		else if(!args[argNo].compare("-i"))
@@ -96,6 +98,8 @@ int main(int argc, char* argv[])
 			shrinkage = atofExt(argv[argNo + 1]);
 		else if(!args[argNo].compare("-sub"))
 			subsample = atofExt(argv[argNo + 1]);
+        else if(!args[argNo].compare("-multi"))
+			ti.multi = args[argNo + 1]; 
 		else if(!args[argNo].compare("-c"))
 		{
 			if(!args[argNo + 1].compare("roc"))
@@ -134,35 +138,48 @@ int main(int argc, char* argv[])
 //1.b) Initialize random number generator. 
 	srand(ti.seed);
 
-//2. Load data
+// if multitask, need vector of INDdata class, vector of CTree
+
+//2. Load data  // for task t in 1..T
+
+    
 	INDdata data(ti.trainFName.c_str(), ti.validFName.c_str(), ti.testFName.c_str(), 
-				 ti.attrFName.c_str());
+				 ti.attrFName.c_str(),ti.multi); // ti.multi is the task variable name
 	CTree::setData(data);
 	CTreeNode::setData(data);
 
 //2.a) Start thread pool
-#ifndef _WIN32
+#ifndef _WIN32    // should we get multithread for each tree from each task?
 	TThreadPool pool(threadN);
 	CTree::setPool(pool);
 #endif
 
 //------------------
 	int attrN = data.getAttrN();
-	int attrIds[attrN];       
-	fill_n(attrIds, attrN, 0); // initialize all attrIds 0:notused 1:used
+	int taskN = data.getTaskN();
+	intv usedGroup(attrN,0); // for group penalty
+	intvv usedIdv; // for indvidual task penalty
+	for(int i = 0; i < taskN; i++)
+	{
+		intv tmp(attrN,0);
+		usedIdv.push_back(tmp);
+	}
+
+	// int attrIds[attrN];       
+	// fill_n(attrIds, attrN, 0); // initialize all attrIds 0:notused 1:used
 	if(topAttrN == -1)
 		topAttrN = attrN;
 	idpairv attrCounts;	//counts of attribute importance
 	bool doFS = (topAttrN != 0);	//whether feature selection is requested
-	if(doFS)
-	{//initialize attrCounts
-		attrCounts.resize(attrN);
-		for(int attrNo = 0; attrNo < attrN; attrNo++)
-		{
-			attrCounts[attrNo].first = attrNo;	//number of attribute	
-			attrCounts[attrNo].second = 0;		//counts
-		}
-	}
+	// if(doFS)
+	// {//initialize attrCounts
+	// 	attrCounts.resize(attrN);
+	// 	for(int attrNo = 0; attrNo < attrN; attrNo++)
+	// 	{
+	// 		attrCounts[attrNo].first = attrNo;	//number of attribute	
+	// 		attrCounts[attrNo].second = 0;		//counts
+	// 	}
+	// }
 
 	fstream frmscurve("boosting_rms.txt", ios_base::out); //bagging curve (rms)
 	frmscurve.close();
@@ -179,41 +196,67 @@ int main(int argc, char* argv[])
 	doublev trainTar;
 	int trainN = data.getTargets(trainTar, TRAIN);
 
-	int sampleN;
-	if(subsample == -1)
-		sampleN = trainN;
-	else
-		sampleN = (int) (trainN * subsample);
+	// int sampleN;
+	// if(subsample == -1)
+	// 	sampleN = trainN;
+	// else
+	// 	sampleN = (int) (trainN * subsample);
 	
 	doublev validPreds(validN, 0);
 	doublev trainPreds(trainN, 0);
 	
-	for(int treeNo = 0; treeNo < treeN; treeNo++)
+    // end for task t in 1..T
+    
+    
+
+	for(int treeNo = 0; treeNo < treeN; treeNo++) //boosting procedure start
 	{
 		if(treeNo % 10 == 0)
 			cout << "\titeration " << treeNo + 1 << " out of " << treeN << endl;
+        // for task t in 1..T
+        int taskNo=0;
 
-		if(subsample == -1)
-			data.newBag();
+        for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); it++ )
+
+        { 
+
+
+
+
+		if(subsample == -1) 
+			data.newBag(it->first);  //pass in taskId
 		else
-			data.newSample(sampleN);
+			{   int sampleN = (int) ((it->second).size() * subsample);
+			data.newSample(sampleN); //pass in taskId
+		}
 
-		CTree tree(ti.alpha,ti.mu,attrIds);
-		tree.setRoot();
+		CTree tree(ti.alpha,ti.mu,&usedIdv[taskNo],ti.smu,&usedGroup);  // 10/30/2018: need continue modifying TreeNode.h TreeNode.cpp add the rest of gbt_train.cpp 
+		tree.setRoot(); 
 		tree.resetRoot(trainPreds);
 		idpairv stub;
 		tree.grow(doFS, attrCounts);
 
 		//update predictions
-		for(int itemNo = 0; itemNo < trainN; itemNo++)
+		double rmse=0;
+		for(int itemNo : it->second )
 			trainPreds[itemNo] += shrinkage * tree.predict(itemNo, TRAIN);
-		for(int itemNo = 0; itemNo < validN; itemNo++)
+		for(int itemNo : (data.getTask2ValidMap())[it->first])
+		{
 			validPreds[itemNo] += shrinkage * tree.predict(itemNo, VALID);
+			rmse += ( validPreds[itemNo] -  validTar[itermNo] ) * ( validPreds[itemNo] -  validTar[itermNo] ); 
+		}
+		rmse = sqrt( rmse / ((data.getTask2ValidMap())[it->first]).size() ); 
+
 
 		//output
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
-		frmscurve << rmse(validPreds, validTar) << endl;
+		//frmscurve << rmse(validPreds, validTar) << endl;
+		frmscurve << "iteration: "<< treeNo << " task: "<< it->task << " rmse: " << rmse <<endl;
 		frmscurve.close();
+
+
+
+
 		
 		if(!ti.rms)
 		{
@@ -222,36 +265,57 @@ int main(int argc, char* argv[])
 			froccurve.close();
 		}
 
+		taskNo++;
+        
+        }// end for task t in 1..T
+        
+
 	}
 
-	int usedAttrN=0;  // number of used features
-	for(int i=0;i<attrN;i++){
-		usedAttrN+=attrIds[i];
-	}
+
+        
+        // for task t in 1..T
+	// int usedAttrN=0;  // number of used features
+	// for(int i=0;i<attrN;i++){
+	// 	usedAttrN+=attrIds[i];
+	
 
 	//output feature selection results
 	if(doFS)
 	{
-		sort(attrCounts.begin(), attrCounts.end(), idGreater);
-		if(topAttrN > attrN)
-			topAttrN = attrN;
+		// sort(attrCounts.begin(), attrCounts.end(), idGreater);
+		// if(topAttrN > attrN)
+		// 	topAttrN = attrN;
+
 
 		fstream ffeatures("feature_scores.txt", ios_base::out);
-		ffeatures << "Number of features used: " << usedAttrN << "\n";
-		ffeatures << "Top " << topAttrN << " features\n";
-		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-			ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t"
-			<< attrCounts[attrNo].second / ti.bagN / trainN << "\n";
-		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
-		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-			ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
-		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
+
+		int taskNo=0;
+
+		for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); it++ )
+
+
+		{
+		int usedAttrN  = accumulate((usedIdv[taskNo]).begin(), (usedIdv[taskNo]).end(), 0);
+		ffeatures << "Number of features used for taskId: "<< it->first << " is " << usedAttrN << "\n";
+		taskNo++;
+
+		}
+		// ffeatures << "Top " << topAttrN << " features\n";
+
+		// for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+		// 	ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t"
+		// 	<< attrCounts[attrNo].second / ti.bagN / trainN << "\n";
+		// ffeatures << "\n\nColumn numbers (beginning with 1)\n";
+		// for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+		// 	ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
+		// ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
 		ffeatures.close();
 
 		//output new attribute file
-		for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
-			data.ignoreAttr(attrCounts[attrNo].first);
-		data.outAttr(ti.attrFName);
+		// for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
+		// 	data.ignoreAttr(attrCounts[attrNo].first);
+		// data.outAttr(ti.attrFName);
 	}
 
 	//output predictions
@@ -260,6 +324,8 @@ int main(int argc, char* argv[])
 	for(int itemNo = 0; itemNo < validN; itemNo++)
 		fpreds << validPreds[itemNo] << endl;
 	fpreds.close();
+    
+    // end for task t in 1..T
 
 //------------------
 

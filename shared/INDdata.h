@@ -10,7 +10,7 @@ class INDdata
 public:
 	//loads data into memory
 	INDdata(const char* trainFName, const char* valFName, const char* testFName, 
-			const char* attrFName, bool doOut = true);
+			const char* attrFName, string task="", bool doOut = true);
 	
 //private members get functions  
 	int getAttrN(){return attrN;}	
@@ -42,6 +42,9 @@ public:
 
 	//gets a value of a given attribute for a given case in a given data set
 	double getValue(int itemNo, int attrId, DATA_SET dset);
+
+	//gets a value of task variable for a given case in a given data set (for multitask)
+	//string getValue(int itemNo, string attrName, DATA_SET dset);
 
 	//returns the name of the attribute by its number
 	string getAttrName(int attrId);
@@ -90,6 +93,9 @@ public:
 	//gets all values of a specific attribute in the validation set
 	void getValues(int attrId, doublev& values);
 
+	//gets all value to rowid map for a specific attribute(task) in a dataset (for multitask)
+	void getValues(int attrId, DATA_SET dset, str2intv& maps);
+
 	//calculates and outputs correlation scores between active attributes based on the training set
 	void correlations(string trainFName);
 
@@ -114,22 +120,27 @@ private:
 	int tarColNo;		//response column number
 	int weightColNo;	//weights column number
 
+
+
 	int trainN;			//number of data points in the train set
 	double trainV;		//sum of weights
 	floatvv train;		//train set data w/o response
 	doublev trainTar;	//train set response
 	doublev trainW;		//train set weights
 	doublev trainR;		//ranges of train set weights
+	
 
 	int validN;			//number of data points in the validation set
 	floatvv valid;		//validation set data w/o response
 	doublev validTar;	//validation set response
 	doublev validW;		//validation set weights
 
+
 	int testN;			//number of data points in the test set
 	floatvv test;		//test set data w/o response
 	doublev testTar;	//test set response
 	doublev testW;		//test set weights
+
 
 	intv bootstrap;		//indexes of data points currently in the bag, can be repeating
 	int oobN;			//number of out-of-bag data points
@@ -142,5 +153,18 @@ private:
 
 	bool hasMV;			//data has missing values
 	bool hasActiveMV;	//data has missing values in active attributes
+
+	// for multitask
+	string task;        //name of the task variable. for multitask
+	//intv taskIds;   //Ids of tasks. for multitask
+	//int taskCorNo;      //task column number. if not multitask set -1;
+	intv trainTask;   //train set task column
+	iivmap task2TrainRows; //map task to the corresponding rows in traindata (for multitask)
+	intv validTask;   //validation set task column
+	iivmap task2ValidRows; // map task to the corresponding rows in validation data (for multitask)
+	intv testTask;   //test set task column
+	iivmap task2TestRows; // map task to the corresponding rows in test data (for multitask)
+
+
 
 };

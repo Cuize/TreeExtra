@@ -14,10 +14,10 @@
 class CTreeNode  
 {
 private:
-	static INDdata* pData;
+    INDdata* pData;
 public:
-	//initialize static data pointer
-	static void setData(INDdata& data){pData = &data;}
+	//initialize data pointer
+	void setData(INDdata& data){pData = &data;}
 
 public:
 	//constructor
