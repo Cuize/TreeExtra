@@ -136,7 +136,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		fstream fin;
 		fin.open(trainFName, ios_base::in);
 		if(fin.fail()) 
-			throw OPEN_train_ERR;
+			throw OPEN_TRAIN_ERR;
 		 
 		hasMV = false;
 		hasActiveMV = false;
@@ -156,7 +156,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 				readData(buf, fin.gcount(), item, colN);
 			
 				if(isnan(item[tarColNo]))
-					throw MV_CLASS_train_ERR;
+					throw MV_CLASS_TRAIN_ERR;
 				trainTar.push_back(item[tarColNo]);
 			
 				if(weightColNo != -1)
@@ -191,7 +191,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		trainN = caseNo;
 		trainV = trainN;
 		if(trainN == 0)
-			throw train_EMPTY_ERR;
+			throw TRAIN_EMPTY_ERR;
 		if(weightColNo != -1)
 		{
 			double trainSum = 0;
@@ -206,7 +206,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			}
 
 		}
-		double trainStD = getTarStD(train);
+		double trainStD = getTarStD(TRAIN);
 		telog << trainN << " points in the train set, std. dev. of " << tarName << " values = " << trainStD 
 			<< "\n\n"; 
 		fin.close();
@@ -319,7 +319,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 	else	//no test set
 		testN = 0;
 
-	getValues() //fill the task to rowid maps (for multitask)
+	getValues(); //fill the task to rowid maps (for multitask)
 	//initialize bootstrap (bag of data)
 	// bootstrap.resize(trainN); 
 	// newBag();	
@@ -339,7 +339,7 @@ void INDdata::readData(char* buf, streamsize buflen, floatv& retv, int retvlen)
 	for(int chNo = 0; chNo < buflen; chNo ++)
 		if(buf[chNo] != ' ')
 			line.push_back(buf[chNo]);
-setroot
+	
 	retv.resize(retvlen, 0);
 	stringstream itemstr(line.c_str());
 	string singleItem;
@@ -506,7 +506,7 @@ int INDdata::getOutOfBag(intv& oobData_out, doublev& oobTar_out)
 //Gets validaton data info (validTar, validN)
 int INDdata::getTargets(doublev& targets, DATA_SET dset)
 {
-	if(dset == train)
+	if(dset == TRAIN)
 	{
 		targets = trainTar;
 		return trainN;
@@ -567,7 +567,7 @@ double INDdata::getValue(int itemNo, int attrId, DATA_SET dset)
 {
 	if(attrId >= attrN)
 		throw ATTR_ID_ERR;
-	if(dset == train)
+	if(dset == TRAIN)
 		return train[itemNo][attrId];
 	else if(dset == TEST)
 		return test[itemNo][attrId];
@@ -596,7 +596,7 @@ string INDdata::getAttrName(int attrId)
 double INDdata::getTarStD(DATA_SET ds)
 {
 	doublev* ptargets = NULL;
-	if(ds == train)
+	if(ds == TRAIN)
 		ptargets = &trainTar;	
 	if(ds == TEST)
 		ptargets = &testTar;
