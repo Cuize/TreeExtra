@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
 	
     // end for task t in 1..T
     
-    
+    iivmap task2Train = data.getTask2TrainMap();
 
 	for(int treeNo = 0; treeNo < treeN; treeNo++) //boosting procedure start
 	{
@@ -221,7 +221,9 @@ int main(int argc, char* argv[])
         int taskNo=0;
         cout << "flag1" << endl;
 
-        for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); ++it )
+        
+
+        for(iivmap::iterator it = task2Train.begin(); it != task2Train.end(); ++it )
 
         { 
         	cout << "it->first: "<< it->first << endl;
@@ -311,7 +313,7 @@ int main(int argc, char* argv[])
 
 		int taskNo=0;
 
-		for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); ++it )
+		for(iivmap::iterator it = task2Train.begin(); it != task2Train.end(); ++it )
 
 
 		{
