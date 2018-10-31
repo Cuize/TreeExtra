@@ -171,17 +171,19 @@ int main(int argc, char* argv[])
 	// fill_n(attrIds, attrN, 0); // initialize all attrIds 0:notused 1:used
 	if(topAttrN == -1)
 		topAttrN = attrN;
-	idpairv attrCounts;	//counts of attribute importance
+
+	idpairv attrCounts;	//counts of attribute importance, need modification for multitask
+
 	bool doFS = (topAttrN != 0);	//whether feature selection is requested
-	// if(doFS)
-	// {//initialize attrCounts
-	// 	attrCounts.resize(attrN);
-	// 	for(int attrNo = 0; attrNo < attrN; attrNo++)
-	// 	{
-	// 		attrCounts[attrNo].first = attrNo;	//number of attribute	
-	// 		attrCounts[attrNo].second = 0;		//counts
-	// 	}
-	// }
+	if(doFS)
+	{//initialize attrCounts
+		attrCounts.resize(attrN);
+		for(int attrNo = 0; attrNo < attrN; attrNo++)
+		{
+			attrCounts[attrNo].first = attrNo;	//number of attribute	
+			attrCounts[attrNo].second = 0;		//counts
+		}
+	}
 
 	fstream frmscurve("boosting_rms.txt", ios_base::out); //bagging curve (rms)
 	frmscurve.close();
@@ -232,7 +234,7 @@ int main(int argc, char* argv[])
 			data.newSample(sampleN,it->first); //pass in taskId
 		}
 
-		CTree tree(ti.alpha,ti.mu,&usedIdv[taskNo],ti.smu,&usedGroup);  // 10/30/2018: need continue modifying TreeNode.h TreeNode.cpp add the rest of gbt_train.cpp 
+		CTree tree(ti.alpha,ti.mu,&usedIdv[taskNo],ti.smu,&usedGroup);  
 		tree.setRoot(); 
 		tree.resetRoot(trainPreds);
 		idpairv stub;
@@ -345,7 +347,7 @@ int main(int argc, char* argv[])
 			case INPUT_ERR:
 				errlog << "Usage: gbt_train -t _train_set_ -v _validation_set_ -r _attr_file_" 
 					<< "[-a _alpha_value_] [-mu _mu_value_] [-n _boosting_iterations_] [-i _init_random_] [-c rms|roc]"
-					<< " [-sh _shrinkage_ ] [-sub _subsampling_] | -version\n";
+					<< " [-sh _shrinkage_ ] [-sub _subsampling_] [-multi _task_variable_name_] [-smu _shared_mu_] | -version\n";
 				break;
 			case ALPHA_ERR:
 				errlog << "Error: alpha value is out of [0;1] range.\n";
