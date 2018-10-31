@@ -19,6 +19,8 @@
 
 #include <algorithm>
 #include <errno.h>
+#include <numeric>
+#include <cmath>
 
 int main(int argc, char* argv[])
 {	
@@ -216,7 +218,7 @@ int main(int argc, char* argv[])
         // for task t in 1..T
         int taskNo=0;
 
-        for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); it++ )
+        for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); ++it )
 
         { 
 
@@ -227,7 +229,7 @@ int main(int argc, char* argv[])
 			data.newBag(it->first);  //pass in taskId
 		else
 			{   int sampleN = (int) ((it->second).size() * subsample);
-			data.newSample(sampleN); //pass in taskId
+			data.newSample(sampleN,it->first); //pass in taskId
 		}
 
 		CTree tree(ti.alpha,ti.mu,&usedIdv[taskNo],ti.smu,&usedGroup);  // 10/30/2018: need continue modifying TreeNode.h TreeNode.cpp add the rest of gbt_train.cpp 
@@ -238,20 +240,24 @@ int main(int argc, char* argv[])
 
 		//update predictions
 		double rmse=0;
-		for(int itemNo : it->second )
-			trainPreds[itemNo] += shrinkage * tree.predict(itemNo, TRAIN);
-		for(int itemNo : (data.getTask2ValidMap())[it->first])
+		intv tmpTrainId = it->second;
+		for(intv::iterator it = tmpTrainId.begin(); it != tmpTrainId.end(); ++it )
 		{
-			validPreds[itemNo] += shrinkage * tree.predict(itemNo, VALID);
-			rmse += ( validPreds[itemNo] -  validTar[itermNo] ) * ( validPreds[itemNo] -  validTar[itermNo] ); 
+			trainPreds[*it] += shrinkage * tree.predict(*it, TRAIN);
 		}
-		rmse = sqrt( rmse / ((data.getTask2ValidMap())[it->first]).size() ); 
+		intv tmpValidId = (data.getTask2ValidMap())[it->first];
+		for(intv::iterator it = tmpValidId.begin(); it != tmpValidId.end(); ++it )
+		{
+			validPreds[*it] += shrinkage * tree.predict(*it, VALID);
+			rmse += ( validPreds[*it] -  validTar[*it] ) * ( validPreds[*it] -  validTar[*it] ); 
+		}
+		rmse = sqrt( rmse / ( tmpValidId.size() ); 
 
 
 		//output
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
 		//frmscurve << rmse(validPreds, validTar) << endl;
-		frmscurve << "iteration: "<< treeNo << " task: "<< it->task << " rmse: " << rmse <<endl;
+		frmscurve << "iteration: "<< treeNo << " task: "<< it->first << " rmse: " << rmse <<endl;
 		frmscurve.close();
 
 
@@ -292,7 +298,7 @@ int main(int argc, char* argv[])
 
 		int taskNo=0;
 
-		for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); it++ )
+		for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); ++it )
 
 
 		{

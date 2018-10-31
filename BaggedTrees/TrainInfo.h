@@ -12,7 +12,7 @@ public:
 	double alpha;		//min proportion of train set in the leaf (controls size of tree)
 	bool rms;			//rms/roc performance metric
 	double mu;          //penalty on new spilt variable for feature selection
-    string task;        //task variable name
+    string multi;        //task variable name
     double smu;   //shared penalty parameter between tasks
 
 	//file names
