@@ -339,10 +339,10 @@ int main(int argc, char* argv[])
 		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
 			ffeatures << data.getColNo(attrCounts[taskNo][attrNo].first) + 1 << " ";
 		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1<< "\n";
-		ffeatures.close();
 		taskNo++;
 
 		}
+		ffeatures.close();
 
 		// //output new attribute file
 		// for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
