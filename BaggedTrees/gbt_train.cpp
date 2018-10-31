@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
 		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
 		ffeatures.close();
 
-		output new attribute file
+		//output new attribute file
 		for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
 			data.ignoreAttr(attrCounts[attrNo].first);
 		data.outAttr(ti.attrFName);
