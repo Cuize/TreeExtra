@@ -352,14 +352,16 @@ double roc(doublev& preds, doublev& tars)
 		data[i].first = preds[i];
 		data[i].second = tars[i];
 		if((tars[i] < 0) || (tars[i] > 1))
-			throw ROC_ERR;
+			return -1.0;
+			//throw ROC_ERR;
 		if(tars[i] != 0)
 			onlyZeros = false;
 		if(tars[i] != 1)
 			onlyOnes = false;
 	}
 	if(onlyZeros || onlyOnes)
-		throw ROC_FLAT_ERR;
+		return 0.0;
+		//throw ROC_FLAT_ERR;
       
 	sort(data.begin(), data.end());
 	
