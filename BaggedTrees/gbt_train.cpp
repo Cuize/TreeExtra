@@ -292,7 +292,17 @@ int main(int argc, char* argv[])
 		if(!ti.rms)
 		{
 			froccurve.open("boosting_roc.txt", ios_base::out | ios_base::app); 
-			froccurve << roc(validPreds, validTar) << endl;
+			//froccurve << roc(validPreds, validTar) << endl;
+			doublev tmpPreds;
+			doublev tmpTar;
+			for(intv::iterator it3 = tmpValidId.begin(); it3 != tmpValidId.end(); ++it3 )
+			{
+				tmpPreds.push_back(validPreds[*it3]);
+				tmpTar.push_back(validTar[*it3]);
+			}
+
+
+			froccurve << "iteration: "<< treeNo + 1 << " task: "<< it->first << " AUC_ROC: " << roc(tmpPreds, tmpTar) <<endl;
 			froccurve.close();
 		}
 
