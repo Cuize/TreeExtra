@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
 		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
 		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
 			ffeatures << data.getColNo(attrCounts[taskNo][attrNo].first) + 1 << " ";
-		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1<< "\n";
+		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1<< "\n"<<"\n"<<"end of taskId:"<< it->first << "\n" << "\n"<< "\n";
 		taskNo++;
 
 		}
