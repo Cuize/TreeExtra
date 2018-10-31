@@ -319,6 +319,10 @@ int main(int argc, char* argv[])
 			topAttrN = attrN;
 		
 
+		int totalUsedAttrN = accumulate(usedGroup.begin(), usedGroup.end(), 0);
+
+		intv usedCommon(attrN,1); // common used feature across all task
+
 		fstream ffeatures("feature_scores.txt", ios_base::out);
 
 		int taskNo=0;
@@ -331,17 +335,34 @@ int main(int argc, char* argv[])
 		sort(attrCounts[taskNo].begin(), attrCounts[taskNo].end(), idGreater);
 		int usedAttrN  = accumulate((usedIdv[taskNo]).begin(), (usedIdv[taskNo]).end(), 0);
 		ffeatures << "Number of features used for taskId: "<< it->first << " is " << usedAttrN << "\n";
+		ffeatures << "Number of sample for taskId: "<< it->first << " is " << (it->second).size() << "\n";
 		ffeatures << "Top " << topAttrN << " features\n";
 		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
 			ffeatures << data.getAttrName(attrCounts[taskNo][attrNo].first) << "\t"
 				<< attrCounts[taskNo][attrNo].second / treeN / (it->second).size() << "\n";
 		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
+
 		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+		{
+			if( (usedCommon[attrNo] == 1) && (usedIdv[taskNo][attrNo] == 0) )
+				usedCommon[attrNo] = 0;
+
+		
 			ffeatures << data.getColNo(attrCounts[taskNo][attrNo].first) + 1 << " ";
+		}
+
 		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1<< "\n"<<"\n"<<"end of taskId:"<< it->first << "\n" << "\n"<< "\n";
+		
 		taskNo++;
 
 		}
+
+		int usedCommonAttrN = accumulate(usedCommon.begin(), usedCommon.end(), 0);
+
+		ffeatures << " Total Number of active features: "<< totalUsedAttrN << "\n";
+		ffeatures << " Total Number of common active features across all tasks: "<< usedCommonAttrN << "\n";
+
+
 		ffeatures.close();
 
 		// //output new attribute file
