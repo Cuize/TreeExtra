@@ -62,10 +62,10 @@ private:
 //Information required for a single node splitting job to run. Used for multithreading
 struct JobData
 {	
-	JobData(nodeip in_curNH, nodehstack* in_pNodes, TCondition* in_pNodesCond, int* in_pToDoN, 
-			idpairv* in_pAttrCounts, double in_b, double in_H, double muIn, intv* pUsedIdvIn,double smuIn, intv* pUsedGroupIn):
-	curNH(in_curNH), pNodes(in_pNodes), pNodesCond(in_pNodesCond), pToDoN(in_pToDoN), 
-	pAttrCounts(in_pAttrCounts), b(in_b), H(in_H), mu(muIn), pUsedIdv(pUsedIdvIn),smu(smuIn), pUsedGroup(pUsedGroupIn) {}
+	JobData(nodeip in_curNH, nodehstack* in_pNodes, TCondition* in_pNodesCond, int* in_pToDoN,
+	 idpairv* in_pAttrCounts, double in_b, double in_H, double muIn, intv* pUsedIdvIn,double smuIn, intv* pUsedGroupIn):
+	curNH(in_curNH), pNodes(in_pNodes), pNodesCond(in_pNodesCond), pToDoN(in_pToDoN), pAttrCounts(in_pAttrCounts),
+	b(in_b), H(in_H), mu(muIn), pUsedIdv(pUsedIdvIn),smu(smuIn), pUsedGroup(pUsedGroupIn) {}
 
 	nodeip curNH; 
 	nodehstack* pNodes;

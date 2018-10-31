@@ -291,9 +291,9 @@ int main(int argc, char* argv[])
 	//output feature selection results
 	if(doFS)
 	{
-		// sort(attrCounts.begin(), attrCounts.end(), idGreater);
-		// if(topAttrN > attrN)
-		// 	topAttrN = attrN;
+		sort(attrCounts.begin(), attrCounts.end(), idGreater);
+		if(topAttrN > attrN)
+			topAttrN = attrN;
 
 
 		fstream ffeatures("feature_scores.txt", ios_base::out);
@@ -309,21 +309,21 @@ int main(int argc, char* argv[])
 		taskNo++;
 
 		}
-		// ffeatures << "Top " << topAttrN << " features\n";
+		ffeatures << "Top " << topAttrN << " features\n";
 
-		// for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-		// 	ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t"
-		// 	<< attrCounts[attrNo].second / ti.bagN / trainN << "\n";
-		// ffeatures << "\n\nColumn numbers (beginning with 1)\n";
-		// for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-		// 	ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
-		// ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
+		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+			ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t"
+			<< attrCounts[attrNo].second / ti.bagN / trainN << "\n";
+		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
+		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+			ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
+		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
 		ffeatures.close();
 
-		//output new attribute file
-		// for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
-		// 	data.ignoreAttr(attrCounts[attrNo].first);
-		// data.outAttr(ti.attrFName);
+		output new attribute file
+		for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
+			data.ignoreAttr(attrCounts[attrNo].first);
+		data.outAttr(ti.attrFName);
 	}
 
 	//output predictions
