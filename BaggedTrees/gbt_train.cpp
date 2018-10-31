@@ -241,17 +241,17 @@ int main(int argc, char* argv[])
 		//update predictions
 		double rmse=0;
 		intv tmpTrainId = it->second;
-		for(intv::iterator it = tmpTrainId.begin(); it != tmpTrainId.end(); ++it )
+		for(intv::iterator it1 = tmpTrainId.begin(); it1 != tmpTrainId.end(); ++it1 )
 		{
-			trainPreds[*it] += shrinkage * tree.predict(*it, TRAIN);
+			trainPreds[*it1] += shrinkage * tree.predict(*it1, TRAIN);
 		}
 		intv tmpValidId = (data.getTask2ValidMap())[it->first];
-		for(intv::iterator it = tmpValidId.begin(); it != tmpValidId.end(); ++it )
+		for(intv::iterator it2 = tmpValidId.begin(); it2 != tmpValidId.end(); ++it2 )
 		{
-			validPreds[*it] += shrinkage * tree.predict(*it, VALID);
-			rmse += ( validPreds[*it] -  validTar[*it] ) * ( validPreds[*it] -  validTar[*it] ); 
+			validPreds[*it2] += shrinkage * tree.predict(*it2, VALID);
+			rmse += ( validPreds[*it2] -  validTar[*it2] ) * ( validPreds[*it2] -  validTar[*it2] ); 
 		}
-		rmse = sqrt( rmse / ( tmpValidId.size() ); 
+		rmse = sqrt( rmse / tmpValidId.size() ); 
 
 
 		//output
