@@ -219,10 +219,13 @@ int main(int argc, char* argv[])
 			cout << "\titeration " << treeNo + 1 << " out of " << treeN << endl;
         // for task t in 1..T
         int taskNo=0;
+        cout << "flag1" << endl;
 
         for(iivmap::iterator it = data.getTask2TrainMap().begin(); it != data.getTask2TrainMap().end(); ++it )
 
         { 
+        	cout << "it->first: "<< it->first << endl;
+        	cout << "it->second.size() "<< (it->second).size() << endl;
 
 
 
@@ -238,7 +241,9 @@ int main(int argc, char* argv[])
 		tree.setRoot(); 
 		tree.resetRoot(trainPreds);
 		idpairv stub;
+		cout << "flag2" << endl;
 		tree.grow(doFS, attrCounts);
+		cout << "flag3" << endl;
 
 		//update predictions
 		double rmse=0;
@@ -247,13 +252,17 @@ int main(int argc, char* argv[])
 		{
 			trainPreds[*it1] += shrinkage * tree.predict(*it1, TRAIN);
 		}
+		cout << "flag4" << endl;
 		intv tmpValidId = (data.getTask2ValidMap())[it->first];
 		for(intv::iterator it2 = tmpValidId.begin(); it2 != tmpValidId.end(); ++it2 )
 		{
 			validPreds[*it2] += shrinkage * tree.predict(*it2, VALID);
 			rmse += ( validPreds[*it2] -  validTar[*it2] ) * ( validPreds[*it2] -  validTar[*it2] ); 
 		}
+		cout << "flag5" << endl;
 		rmse = sqrt( rmse / tmpValidId.size() ); 
+
+		cout << "flag6" << endl;
 
 
 		//output
@@ -261,6 +270,7 @@ int main(int argc, char* argv[])
 		//frmscurve << rmse(validPreds, validTar) << endl;
 		frmscurve << "iteration: "<< treeNo << " task: "<< it->first << " rmse: " << rmse <<endl;
 		frmscurve.close();
+		cout << "flag7" << endl;
 
 
 
@@ -273,7 +283,8 @@ int main(int argc, char* argv[])
 			froccurve.close();
 		}
 
-		taskNo++;
+		++taskNo;
+		cout << "flag8" << endl;
         
         }// end for task t in 1..T
         
