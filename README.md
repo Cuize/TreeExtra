@@ -6,4 +6,4 @@ You can find detailed manuals, early releases, related research papers and talks
 
 TreeExtra is maintained for both Windows and Linux platforms. There is no support for OS X/macOS systems at this time.
 
-multitask version 
+adaptive_multitask version 
