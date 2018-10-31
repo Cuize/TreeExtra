@@ -57,6 +57,7 @@ typedef vector<ssdtriple> ssdtriplev;
 typedef numeric_limits<float> flim;
 
 typedef map<int,intv> iivmap; //map taskId to row ids -- for multitask
+typedef vector<idpairv> idpairvv; //attrCounts for each task -- for multitask
 
 enum DATA_SET
 {

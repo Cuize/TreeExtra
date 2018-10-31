@@ -172,16 +172,27 @@ int main(int argc, char* argv[])
 	if(topAttrN == -1)
 		topAttrN = attrN;
 
-	idpairv attrCounts;	//counts of attribute importance, need modification for multitask
+	//idpairv attrCounts;	//counts of attribute importance, need modification for multitask
+	idpairvv attrCounts;
 
 	bool doFS = (topAttrN != 0);	//whether feature selection is requested
 	if(doFS)
 	{//initialize attrCounts
-		attrCounts.resize(attrN);
-		for(int attrNo = 0; attrNo < attrN; attrNo++)
+
+
+		for(int i = 0; i < taskN; i++)
 		{
-			attrCounts[attrNo].first = attrNo;	//number of attribute	
-			attrCounts[attrNo].second = 0;		//counts
+			idpairv tmp;
+			//attrCounts.resize(attrN);
+			tmp.resize(attrN);
+			for(int attrNo = 0; attrNo < attrN; attrNo++)
+			{
+				//attrCounts[attrNo].first = attrNo;	//number of attribute	
+				//attrCounts[attrNo].second = 0;		//counts
+				tmp[attrNo].first = attrNo;	//number of attribute	
+				tmp[attrNo].second = 0;		//counts
+			}
+			attrCounts.push_back(tmp);
 		}
 	}
 
@@ -244,7 +255,7 @@ int main(int argc, char* argv[])
 		tree.resetRoot(trainPreds);
 		idpairv stub;
 		cout << "flag2" << endl;
-		tree.grow(doFS, attrCounts);
+		tree.grow(doFS, attrCounts[taskNo]);
 		cout << "flag3" << endl;
 
 		//update predictions
@@ -270,7 +281,7 @@ int main(int argc, char* argv[])
 		//output
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
 		//frmscurve << rmse(validPreds, validTar) << endl;
-		frmscurve << "iteration: "<< treeNo << " task: "<< it->first << " rmse: " << rmse <<endl;
+		frmscurve << "iteration: "<< treeNo + 1 << " task: "<< it->first << " rmse: " << rmse <<endl;
 		frmscurve.close();
 		cout << "flag7" << endl;
 
@@ -303,11 +314,10 @@ int main(int argc, char* argv[])
 
 	//output feature selection results
 	if(doFS)
-	{
-		sort(attrCounts.begin(), attrCounts.end(), idGreater);
+	{	
 		if(topAttrN > attrN)
 			topAttrN = attrN;
-
+		
 
 		fstream ffeatures("feature_scores.txt", ios_base::out);
 
@@ -317,26 +327,27 @@ int main(int argc, char* argv[])
 
 
 		{
+
+		sort(attrCounts[taskNo].begin(), attrCounts[taskNo].end(), idGreater);
 		int usedAttrN  = accumulate((usedIdv[taskNo]).begin(), (usedIdv[taskNo]).end(), 0);
 		ffeatures << "Number of features used for taskId: "<< it->first << " is " << usedAttrN << "\n";
+		ffeatures << "Top " << topAttrN << " features\n";
+		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+			ffeatures << data.getAttrName(attrCounts[taskNo][attrNo].first) << "\t"
+				<< attrCounts[taskNo][attrNo].second / treeN / (it->second).size() << "\n";
+		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
+		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
+			ffeatures << data.getColNo(attrCounts[taskNo][attrNo].first) + 1 << " ";
+		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1<< "\n";
+		ffeatures.close();
 		taskNo++;
 
 		}
-		ffeatures << "Top " << topAttrN << " features\n";
 
-		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-			ffeatures << data.getAttrName(attrCounts[attrNo].first) << "\t"
-			<< attrCounts[attrNo].second / ti.bagN / trainN << "\n";
-		ffeatures << "\n\nColumn numbers (beginning with 1)\n";
-		for(int attrNo = 0; attrNo < topAttrN; attrNo++)
-			ffeatures << data.getColNo(attrCounts[attrNo].first) + 1 << " ";
-		ffeatures << "\nLabel column number: " << data.getTarColNo() + 1;
-		ffeatures.close();
-
-		//output new attribute file
-		for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
-			data.ignoreAttr(attrCounts[attrNo].first);
-		data.outAttr(ti.attrFName);
+		// //output new attribute file
+		// for(int attrNo = topAttrN; attrNo < attrN; attrNo++)
+		// 	data.ignoreAttr(attrCounts[attrNo].first);
+		// data.outAttr(ti.attrFName);
 	}
 
 	//output predictions
