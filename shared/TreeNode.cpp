@@ -425,7 +425,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 		{//boolean attribute
 			//there is exactly one split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
-			double eval = evalBool(boolSplit, nodeV, nodeSum, squares, rootVar,) + IdvPenalty + GroupPenalty;
+			double eval = evalBool(boolSplit, nodeV, nodeSum, squares, rootVar) + IdvPenalty + GroupPenalty;
 			if(isnan(eval))
 			{//boolean attribute is not valid anymore, remove it
 				pAttrs->erase(pAttrs->begin() + attrNo);	
