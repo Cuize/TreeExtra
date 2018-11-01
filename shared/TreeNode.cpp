@@ -24,7 +24,7 @@ INDdata* CTreeNode::pData;
 
 //Constructor. If the node is a root, download info about the train set.
 CTreeNode::CTreeNode(): 
-	left(0), right(0), pAttrs(NULL), pSorted(NULL), pItemSet(NULL)
+	left(0), right(0), pAttrs(NULL), pSorted(NULL), pItemSet(NULL), variance(0)
 {
 	
 }
@@ -130,6 +130,7 @@ CTreeNode::CTreeNode(const CTreeNode& rhs)
 void CTreeNode::setRoot()
 {
 	del();	//delete old tree
+	variance = 0;
 
 	if(pAttrs == NULL)
 		pAttrs = new intv();
@@ -147,9 +148,17 @@ void CTreeNode::setRoot()
 //input: predictions for train set data points produced by the rest of the model (not by this tree)	
 //Changes ground truth to residuals in the root train set
 void CTreeNode::resetRoot(doublev& othpreds)
-{
+{	double sums = 0;
+	double square = 0;
+	int count = 0;
 	for(ItemInfov::iterator itemIt = pItemSet->begin();	itemIt != pItemSet->end();	itemIt++)
+	{
 		itemIt->response -= othpreds[itemIt->key];
+		count += 1;
+		sums += itemIt->response;
+		square += (itemIt->response)*(itemIt->response);
+	}
+	variance = square - sums*sums/count;
 }
 
 //This function is used for prediction. It passes the case from the parent to child node(s).
@@ -175,11 +184,11 @@ void CTreeNode::traverse(int itemNo, double inCoef, double& lOutCoef, double& rO
 // Returns true if succeeds, false if this node becomes a leaf
 // input: alpha - min possible ratio of internal node train subset volume to the whole train set size, 
 //		when surpassed,	the node becomes a leaf
-bool CTreeNode::split(double alpha, double* pEntropy, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup )
+bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup )
 {	
 //1. check basic leaf conditions
-	double nodeV, nodeSum, realNodeV;
-	bool StD0 = getStats(nodeV, nodeSum, realNodeV);
+	double nodeV, nodeSum, squares, realNodeV;
+	bool StD0 = getStats(nodeV, nodeSum, squares, realNodeV);
 
 	if((realNodeV / pData->getTrainV() < alpha) || StD0)
 	{
@@ -189,7 +198,7 @@ bool CTreeNode::split(double alpha, double* pEntropy, double mu, intv* pUsedIdv 
 
 //2. Find the best split
 //evaluate all good splits and choose the one with the best evaluation
-	bool notFound = pData->useCoef() ? setSplitMV(nodeV, nodeSum, mu, pUsedIdv , smu , pUsedGroup) : setSplit(nodeV, nodeSum, mu, pUsedIdv , smu , pUsedGroup);	//finds and sets best split
+	bool notFound = pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar,  mu, pUsedIdv , smu , pUsedGroup) : setSplit(nodeV, nodeSum, squares, rootVar, mu, pUsedIdv , smu , pUsedGroup);	//finds and sets best split
 
 	if(notFound)
 	{//no splittings or they disappeared because of tiny coefficients. This node becomes a leaf
@@ -293,10 +302,11 @@ bool CTreeNode::split(double alpha, double* pEntropy, double mu, intv* pUsedIdv 
 	//nodeSum - sum of predictions respectively multiplied by squared coefficients
 	//realNodeV - sum of coefficients
 //returns false if there are different response values, true - if all values are the same
-bool CTreeNode::getStats(double& nodeV, double& nodeSum, double& realNodeV)
+bool CTreeNode::getStats(double& nodeV, double& nodeSum, double& squares, double& realNodeV)
 {
 	nodeSum = 0;
 	nodeV = 0;
+	squares = 0;
 	realNodeV = 0;
 
 	double firstResp = (*pItemSet)[0].response;	//response of the first item
@@ -310,6 +320,7 @@ bool CTreeNode::getStats(double& nodeV, double& nodeSum, double& realNodeV)
 			double coef_sq = coef * coef;
 			nodeV += coef_sq;
 			nodeSum += coef_sq * itemIt->response;
+			squares += (itemIt->response)*(itemIt->response);
 			realNodeV += coef;
 
 			if(itemIt->response != firstResp)
@@ -321,6 +332,7 @@ bool CTreeNode::getStats(double& nodeV, double& nodeSum, double& realNodeV)
 		{
 			nodeV++;
 			nodeSum += itemIt->response;
+			squares += (itemIt->response)*(itemIt->response);
 			if(itemIt->response != firstResp)
 				StD0 = false;
 		}
@@ -400,7 +412,7 @@ void CTreeNode::makeLeaf(double nodeMean)
 	// nodeSum - sum of response values in the training subset
 //out: true, if best split found. false, if there were no splits
 
-bool CTreeNode::setSplit(double nodeV, double nodeSum, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup)
+bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup)
 {
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
@@ -413,7 +425,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double mu, intv* pUsedIdv
 		{//boolean attribute
 			//there is exactly one split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
-			double eval = evalBool(boolSplit, nodeV, nodeSum) + IdvPenalty + GroupPenalty;
+			double eval = evalBool(boolSplit, nodeV, nodeSum, squares, rootVar,) + IdvPenalty + GroupPenalty;
 			if(isnan(eval))
 			{//boolean attribute is not valid anymore, remove it
 				pAttrs->erase(pAttrs->begin() + attrNo);	
@@ -501,10 +513,10 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double mu, intv* pUsedIdv
 					double mean1 = sum1 / volume1;
 					double mean2 = sum2 / volume2;
 
-					double sqErr1 =  - 2 * mean1 * sum1 + volume1 * mean1 * mean1;
-					double sqErr2 =  - 2 * mean2 * sum2 + volume2 * mean2 * mean2;
+					double sqErr1 =  - mean1 * sum1;
+					double sqErr2 =  - mean2 * sum2;
 
-					double eval = sqErr1 + sqErr2 + IdvPenalty + GroupPenalty;
+					double eval = ( sqErr1 + sqErr2 + squares )/rootVar + IdvPenalty + GroupPenalty;
 			
 					//evaluate the split point, if it is the best (one of the best) so far, keep it
 					if(isnan(bestEval) || (eval < bestEval))
@@ -575,7 +587,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double mu, intv* pUsedIdv
 	//nodeV - sum of squared coefficients
 	//nodeSum - sum of predictions respectively multiplied by squared coefficients
 //out: true, if best split found. false, if there were no splits
-bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup)
+bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double rootVar, double mu, intv* pUsedIdv , double smu , intv* pUsedGroup)
 {
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
@@ -608,7 +620,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double mu, intv* pUsedI
 			double mean2 = missSum / missV;
 			double sqErr1 =  - 2 * mean1 * nmSum + nmV * mean1 * mean1;
 			double sqErr2 = - 2 * mean2 * missSum + missV * mean2 * mean2;
-			double eval = sqErr1 + sqErr2 + IdvPenalty + GroupPenalty;
+			double eval = ( sqErr1 + sqErr2 + squares )/rootVar + IdvPenalty + GroupPenalty;
 			
 			//if it is the best (one of the best) so far, keep it
 			if(isnan(bestEval) || (eval < bestEval))
@@ -627,7 +639,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double mu, intv* pUsedI
 		{//boolean attribute
 			//there is only one non-special split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
-			double eval = evalBoolMV(boolSplit, nodeV, nodeSum, missV, missSum) + IdvPenalty + GroupPenalty;
+			double eval = evalBoolMV(boolSplit, nodeV, nodeSum, squares, rootVar, missV, missSum) + IdvPenalty + GroupPenalty;
 			if(!isnan(eval))
 			{//save if this is one of the best splits
 				newSplits = true;
@@ -713,7 +725,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double mu, intv* pUsedI
 					double sqErr2 = - 2 * mean2 * sum2 + volume2 * mean2 * mean2;
 					double missSqErr =  - 2 * missPred * missSum + missV * missPred * missPred; 
 
-					double eval = sqErr1 + sqErr2 + missSqErr + IdvPenalty + GroupPenalty;
+					double eval = ( sqErr1 + sqErr2 + missSqErr + squares )/rootVar + IdvPenalty + GroupPenalty;
 			
 					//evaluate the split point, if it is the best (one of the best) so far, keep it
 					if(isnan(bestEval) || (eval < bestEval))
@@ -774,7 +786,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double mu, intv* pUsedI
 //	in-out: canSplit - info about the splitting being evaluated
 //	in: nodeV - size (volume) of the node train subset
 //  in: nodeSum - sum of responses of the cases in node train subset
-double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum)
+double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar)
 {
 	double volume1 = 0;
 	double sum1 = 0;
@@ -797,12 +809,11 @@ double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum)
 
 	double mean1 = sum1 / volume1;
 	double mean2 = sum2 / volume2;
-	double sqErr1 =  - 2 * mean1 * sum1 + volume1 * mean1 * mean1;
-	double sqErr2 =  - 2 * mean2 * sum2 + volume2 * mean2 * mean2;
-
+	double sqErr1 =  - mean1 * sum1 ;
+	double sqErr2 =  - mean2 * sum2 ;
 	canSplit.missingL = volume1 / nodeV; 
 
-	return sqErr1 + sqErr2;
+	return (sqErr1 + sqErr2 + squares)/rootVar;
 }
 
 //Calculates short sum of squared errors of the boolean split for the data with missing values. Does not require sorting.
@@ -815,7 +826,7 @@ double CTreeNode::evalBool(SplitInfo& canSplit, double nodeV, double nodeSum)
 //  in: nodeSum - sum of responses of the cases in node train subset (calc. with sq coef)
 //	in: missV - volume of the data points with missing values  (calc. with sq coef)
 //  in: missSum - sum of responses data points with missing values (calc. with sq coef)
-double CTreeNode::evalBoolMV(SplitInfo& canSplit, double nodeV, double nodeSum, double missV, double missSum)
+double CTreeNode::evalBoolMV(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar, double missV, double missSum)
 {
 	double volume1 = 0;
 	double sum1 = 0;
@@ -852,7 +863,7 @@ double CTreeNode::evalBoolMV(SplitInfo& canSplit, double nodeV, double nodeSum, 
 
 	canSplit.missingL = leftRatio;
 
-	return sqErr1 + sqErr2 + missSqErr;
+	return (sqErr1 + sqErr2 + missSqErr + squares)/rootVar;
 }
 
 

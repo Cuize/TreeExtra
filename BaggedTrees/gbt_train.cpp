@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 
 	if((ti.alpha < 0) || (ti.alpha > 1))
 		throw ALPHA_ERR;
-	if(ti.mu < 0)
+	if( (ti.mu < 0) || (ti.mu >1) || (ti.smu < 0) || (ti.smu >1)   )
 		throw MU_ERR;
 
 //1.a) Set log file
@@ -256,6 +256,7 @@ int main(int argc, char* argv[])
 		idpairv stub;
 		// cout << "flag2" << endl;
 		tree.grow(doFS, attrCounts[taskNo]);
+		cout << "iteration: "<< treeNo + 1 << " taskId: "<< it->first << " root variance: " << tree.getVariance() <<endl;
 		// cout << "flag3" << endl;
 
 		//update predictions
@@ -408,7 +409,7 @@ int main(int argc, char* argv[])
 				errlog << "Error: alpha value is out of [0;1] range.\n";
 				break;
 			case MU_ERR:
-				errlog << "Error: mu value should be non-negative.\n";
+				errlog << "Error: mu value should be in [0;1].\n";
 				break;
 			case WIN_ERR:
 				errlog << "Input error: TreeExtra currently does not support multithreading for Windows.\n"; 

@@ -38,7 +38,7 @@ public:
 		}
 		double h = curNH.second;
 		double curAlpha = (pJD->H == 0) ? 1 : pow(2, - ( pJD->b +  pJD->H) * h /  pJD->H +  pJD->b);
-		bool notLeaf = curNH.first->split(curAlpha, pEntropy, pJD->mu, pJD->pUsedIdv, pJD->smu, pJD->pUsedGroup);
+		bool notLeaf = curNH.first->split(curAlpha, pJD->variance, pEntropy, pJD->mu, pJD->pUsedIdv, pJD->smu, pJD->pUsedGroup);
 		
 		nodesCond.Lock();
 		if(notLeaf)
@@ -64,7 +64,7 @@ public:
 };
 #endif
 
-CTree::CTree(double alphaIn, double muIn, intv* pUsedIdvIn, double smuIn, intv* pUsedGroupIn): alpha(alphaIn), mu(muIn), pUsedIdv(pUsedIdvIn), smu(smuIn), pUsedGroup(pUsedGroupIn), root()
+CTree::CTree(double alphaIn, double muIn, intv* pUsedIdvIn, double smuIn, intv* pUsedGroupIn, double varianceIn): alpha(alphaIn), mu(muIn), pUsedIdv(pUsedIdvIn), smu(smuIn), pUsedGroup(pUsedGroupIn), variance(varianceIn) root()
 {
 }
 
@@ -99,7 +99,7 @@ void CTree::grow(bool doFS, idpairv& attrCounts)
 		}	
 		double h = curNH.second;
 		double curAlpha = (H == 0) ? 1 : pow(2, - (b + H) * h / H + b);
-		bool notLeaf = curNH.first->split(curAlpha, pEntropy, mu, pUsedIdvIn,smu,pUsedGroup);
+		bool notLeaf = curNH.first->split(curAlpha, variance, pEntropy, mu, pUsedIdvIn,smu,pUsedGroup);
 	
 		if(notLeaf)
 		{//process child nodes of this node
@@ -129,7 +129,7 @@ void CTree::grow(bool doFS, idpairv& attrCounts)
 			idpairv* pAttrCounts = NULL;
 			if(doFS)
 				pAttrCounts = &attrCounts;
-			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, pUsedIdv, smu, pUsedGroup);
+			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, pUsedIdv, smu, pUsedGroup, variance);
 			pPool->Run(new CNodeSplitJob(), pJD, true);
 		}
 		else
@@ -245,9 +245,11 @@ double CTree::predict(int itemNo, DATA_SET dset)
 //Changes ground truth to residuals in the root train set
 void CTree::resetRoot(doublev& othpreds){
 	root.resetRoot(othpreds);
+	variance = root.getVariance();
 }
 
 //loads data into the root
 void CTree::setRoot(){
 	root.setRoot();
+	variance = 0;
 }
