@@ -903,8 +903,8 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 					value1 = prefixedSum[m][sampleNo] - prefixedSum[st - 1][sampleNo];
 				value2 = prefixedSum[ed][sampleNo] - prefixedSum[m][sampleNo];
 
-				[*Ptmp1][sampleNo] = fipair(value1, sampleNo);
-				[*Ptmp2][sampleNo] = fipair(value2, sampleNo);
+				(*Ptmp1)[sampleNo] = fipair(value1, sampleNo);
+				(*Ptmp2)[sampleNo] = fipair(value2, sampleNo);
 			}
 			sort(Ptmp1->begin(), Ptmp1->end());
 			sort(Ptmp2->begin(), Ptmp2->end());
