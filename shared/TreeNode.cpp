@@ -206,13 +206,16 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	// conditions to use setGroupSplit..
 	int remain = max(1,s - (*numUsed));
 	int d = max(1, (int)(pAttrs->size()) - (*numUsed));
+	int group = remain * log(10*remain) * max(1, (int)log2(d/remain));
+	int n = (int)pItemSet->size();
+	bool trigger = ( 2*group < d ) && (n > 10*d);
 
-	int group = remain * log(10*remain) * log2(d/remain);
+	cout<< "group: " << group << endl;
+	cout<< "d: " << d << endl;
+	cout << "n: "<< n << endl;
+	cout << "triggered :" << trigger << endl;
 
-	cout<< "group:" << group << endl;
-	cout<< "d:" << d << endl;
-
-	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (2*group > d) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
+	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (!trigger) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
 
 	if(notFound)
 	{//no splittings or they disappeared because of tiny coefficients. This node becomes a leaf
@@ -858,7 +861,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	for( int i = 0; i < rep; i++)
 	{
 
-		cout << " #rep: " << i+1 <<endl;
+		// cout << " #rep: " << i+1 <<endl;
 		intv subset(subN);// random generate subset of unusedIds with size subN
 
 		random_shuffle( unusedIds.begin(), unusedIds.end() );
@@ -911,28 +914,25 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 
 
-			cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
+			// cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
 
 			if( st==m )
 			{
-				split1 = singleSplit(bestSplits, groupSplitVal1, subset[m], Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
-				if( split1 && (isnan(bestEval) || (groupSplitVal1 < bestEval)) )
-					bestEval = groupSplitVal1;
+				split1 = singleSplit(bestSplits, bestEval, subset[m], Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+
 			}
 			else
 				split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 
 			if( ed==m+1 )
 			{
-				split2 = singleSplit(bestSplits, groupSplitVal2, subset[m+1], Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
-				if( split2 && (isnan(bestEval) || (groupSplitVal2 < bestEval)) )
-					bestEval = groupSplitVal2;
+				split2 = singleSplit(bestSplits, bestEval, subset[m+1], Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 			}
 			else
 				split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 
-			cout << "splitval1: " << groupSplitVal1 << "splitval2: " << groupSplitVal2 << endl;
+			// cout << "splitval1: " << groupSplitVal1 << "splitval2: " << groupSplitVal2 << endl;
 
 			if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
 				ed = m;
