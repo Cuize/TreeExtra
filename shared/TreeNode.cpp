@@ -210,7 +210,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int group = remain * log(10*remain) * log2(d/remain);
 
 	cout<< "group:" << group << endl;
-	cout<< "d:" << d;
+	cout<< "d:" << d << endl;
 
 	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (2*group > d) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
 
@@ -835,7 +835,10 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 				attrNo++;
 	}//end if used feature
 	else
+	{
 		unusedIds.push_back(attr);
+		attrNo++;
+	}
 	}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 
 // Do groupTest among unusedIds

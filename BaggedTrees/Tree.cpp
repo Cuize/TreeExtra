@@ -129,6 +129,9 @@ void CTree::grow(bool doFS, idpairv& attrCounts)
 			idpairv* pAttrCounts = NULL;
 			if(doFS)
 				pAttrCounts = &attrCounts;
+
+			cout << "numUsed: " << *numUsed << endl;
+			
 			JobData* pJD = new JobData(curNH, &nodes, &nodesCond, &toDoN, pAttrCounts, b, H, mu, attrIds, s, numUsed, variance);
 			pPool->Run(new CNodeSplitJob(), pJD, true);
 		}
