@@ -19,6 +19,11 @@
 
 #include <fstream>
 #include <math.h>
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <cmath>
+
 
 INDdata* CTreeNode::pData;
 
@@ -200,7 +205,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 //evaluate all good splits and choose the one with the best evaluation, also approximate split by groupTest and binarySearch
 	// conditions to use setGroupSplit..
 	int remain = max(1,s - (*numUsed));
-	int d = max(1, (pAttrs->size()) - (*numUsed));
+	int d = max(1, (int)(pAttrs->size()) - (*numUsed));
 
 	int group = remain * log(10*remain) * log2(d/remain);
 
@@ -874,7 +879,9 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		{
 			int m = (st+ed)/2;
 			double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
-			double groupSplitval2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
+			double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
+			bool split1;
+			bool split2;
 			// corresponding sorted value and index
 			fipairv tmp1(sampleN); 
 			fipairv tmp2(sampleN);
@@ -902,21 +909,21 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 			if( st==m )
 			{
-				bool split1 = singleSplit(bestSplits, groupSplitVal1, subset[m], Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+				split1 = singleSplit(bestSplits, groupSplitVal1, subset[m], Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 				if( split1 && (isnan(bestEval) || (groupSplitVal1 < bestEval)) )
 					bestEval = groupSplitVal1;
 			}
 			else
-				bool split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+				split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 
 			if( ed==m+1 )
 			{
-				bool split2 = singleSplit(bestSplits, groupSplitVal2, subset[m+1], Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+				split2 = singleSplit(bestSplits, groupSplitVal2, subset[m+1], Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 				if( split2 && (isnan(bestEval) || (groupSplitVal2 < bestEval)) )
 					bestEval = groupSplitVal2;
 			}
 			else
-				bool split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+				split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 
 			if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
 				ed = m;

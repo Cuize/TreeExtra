@@ -80,7 +80,7 @@ private:
 	bool setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int *numUsed = NULL);
 
 	//finds and sets a splitting info with the best MSE when missing values present in the data
-	bool setSplitMV(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int *numUsed = NULL);
+	bool setSplitMV(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL);
 
 	//finds and sets a splitting info with the approximate best MSE, using the idea of groupTest and binarySearch
 	bool setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int s = 20, int *numUsed = NULL);
