@@ -204,20 +204,20 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 
-		// standardize the train set for groupSplit
-		int cols = (train[0]).size();
-		for(int j = 0; j < cols; j++){
-			float ma = train[0][j];
-			float mi = train[0][j];
-			for(int i = 1; i < caseNo; i++){
-				ma = max(ma,train[i][j]);
-				mi = min(mi,train[i][j]);
-			}
-			if(ma > mi){
-				for(int i = 0; i < caseNo; i++)
-					train[i][j] = (train[i][j] - mi)/(ma - mi);
-			}
-		}
+		// // standardize the train set for groupSplit
+		// int cols = (train[0]).size();
+		// for(int j = 0; j < cols; j++){
+		// 	float ma = train[0][j];
+		// 	float mi = train[0][j];
+		// 	for(int i = 1; i < caseNo; i++){
+		// 		ma = max(ma,train[i][j]);
+		// 		mi = min(mi,train[i][j]);
+		// 	}
+		// 	if(ma > mi){
+		// 		for(int i = 0; i < caseNo; i++)
+		// 			train[i][j] = (train[i][j] - mi)/(ma - mi);
+		// 	}
+		// }
 
 
 
