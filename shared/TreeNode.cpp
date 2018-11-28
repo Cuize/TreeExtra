@@ -847,8 +847,13 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	int subN = d/remain;
 	int sampleN = (int)pItemSet->size();
 	int rep = (remain > 1) ? remain*log(10*remain):1;
+	// corresponding sorted value and index
+	fipairv tmp1(sampleN); 
+	fipairv tmp2(sampleN);
+	fipairv* Ptmp1 = &tmp1;
+	fipairv* Ptmp2 = &tmp2;
 
-	cout<<"remain" << remain <<" d "<<d <<" subN " <<subN << "sampleN "<<sampleN<<" rep "<<rep<<endl;
+	cout<<"remain " << remain <<" d "<< d <<" subN " <<subN << " sampleN "<<sampleN<<" rep "<< rep <<endl;
 
 	for( int i = 0; i < rep; i++)
 	{
@@ -887,9 +892,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 			double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
 			bool split1;
 			bool split2;
-			// corresponding sorted value and index
-			fipairv tmp1(sampleN); 
-			fipairv tmp2(sampleN);
+
 			for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 			{
 				float value1;
@@ -900,15 +903,13 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 					value1 = prefixedSum[m][sampleNo] - prefixedSum[st - 1][sampleNo];
 				value2 = prefixedSum[ed][sampleNo] - prefixedSum[m][sampleNo];
 
-				tmp1[sampleNo] = fipair(value1, sampleNo);
-				tmp2[sampleNo] = fipair(value2, sampleNo);
+				[*Ptmp1][sampleNo] = fipair(value1, sampleNo);
+				[*Ptmp2][sampleNo] = fipair(value2, sampleNo);
 			}
-			sort(tmp1.begin(), tmp1.end());
-			sort(tmp2.begin(), tmp2.end());
+			sort(Ptmp1->begin(), Ptmp1->end());
+			sort(Ptmp2->begin(), Ptmp2->end());
 
 
-			fipairv* Ptmp1 = &tmp1;
-			fipairv* Ptmp2 = &tmp2;
 
 			cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
@@ -939,8 +940,6 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 				st = m+1;
 
 
-			delete Ptmp1;
-			delete Ptmp2;
 
 		}
 
