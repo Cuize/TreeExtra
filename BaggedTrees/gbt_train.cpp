@@ -3,7 +3,7 @@
 
 //gbt_train -t _train_set_ -v _validation_set_ -r _attr_file_ 
 //[-a _alpha_value_] [-mu _mu_value_] [-n _boosting_iterations_] [-i _init_random_] [-c rms|roc]
-// [-sh _shrinkage_ ] [-sub _subsampling_] | -version
+// [-sh _shrinkage_ ] [-sub _subsampling_] [-s _expected_active_feature_number_] | -version
 
 #include "Tree.h"
 #include "functions.h"
@@ -88,6 +88,8 @@ int main(int argc, char* argv[])
 			ti.mu = atofExt(argv[argNo + 1]); 
 		else if(!args[argNo].compare("-n"))
 			treeN = atoiExt(argv[argNo + 1]);
+		else if(!args[argNo].compare("-s"))
+			ti.s = atoiExt(argv[argNo + 1]);
 		else if(!args[argNo].compare("-i"))
 			ti.seed = atoiExt(argv[argNo + 1]);
 		else if(!args[argNo].compare("-k"))
@@ -150,6 +152,8 @@ int main(int argc, char* argv[])
 	int attrN = data.getAttrN();
 	int attrIds[attrN];       
 	fill_n(attrIds, attrN, 0); // initialize all attrIds 0:notused 1:used
+	int* numUsed; // number of used features
+	*numUsed = 0;
 	if(topAttrN == -1)
 		topAttrN = attrN;
 	idpairv attrCounts;	//counts of attribute importance
@@ -198,7 +202,7 @@ int main(int argc, char* argv[])
 		else
 			data.newSample(sampleN);
 
-		CTree tree(ti.alpha,ti.mu,attrIds);
+		CTree tree(ti.alpha,ti.mu,attrIds,ti.s,numUsed);
 		tree.setRoot();
 		tree.resetRoot(trainPreds);
 		idpairv stub;

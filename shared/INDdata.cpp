@@ -184,6 +184,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			train.push_back(item);
 			getLineExt(fin, buf);
 		}
+
 		trainN = caseNo;
 		trainV = trainN;
 		if(trainN == 0)
@@ -202,6 +203,24 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			}
 
 		}
+
+		// standardize the train set for groupSplit
+		int cols = (train[0]).size();
+		for(int j = 0; j < cols; j++){
+			float ma = train[0][j];
+			float mi = train[0][j];
+			for(int i = 1; i < caseNo; i++){
+				ma = max(ma,train[i][j]);
+				mi = min(mi,train[i][j]);
+			}
+			if(ma > mi){
+				for(int i = 0; i < caseNo; i++)
+					train[i][j] = (train[i][j] - mi)/(ma - mi)
+			}
+		}
+
+
+
 		double trainStD = getTarStD(TRAIN);
 		telog << trainN << " points in the train set, std. dev. of " << tarName << " values = " << trainStD 
 			<< "\n\n"; 

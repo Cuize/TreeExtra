@@ -184,7 +184,7 @@ void CTreeNode::traverse(int itemNo, double inCoef, double& lOutCoef, double& rO
 // Returns true if succeeds, false if this node becomes a leaf
 // input: alpha - min possible ratio of internal node train subset volume to the whole train set size, 
 //		when surpassed,	the node becomes a leaf
-bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, int *attrIds)
+bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, int *attrIds, int s, int* numUsed)
 {	
 //1. check basic leaf conditions
 	double nodeV, nodeSum, squares, realNodeV;
@@ -197,8 +197,16 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	}
 
 //2. Find the best split
-//evaluate all good splits and choose the one with the best evaluation
-	bool notFound = pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds);	//finds and sets best split
+//evaluate all good splits and choose the one with the best evaluation, also approximate split by groupTest and binarySearch
+	// conditions to use setGroupSplit..
+	int remain = max(1,s - (*numUsed));
+	int d = max(1, (pAttrs->size()) - (*numUsed));
+
+	int group = remain * log(10*remain) * log2(d/remain);
+
+
+
+	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : ( (2*group > d) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
 
 	if(notFound)
 	{//no splittings or they disappeared because of tiny coefficients. This node becomes a leaf
@@ -411,7 +419,7 @@ void CTreeNode::makeLeaf(double nodeMean)
 	// nodeSum - sum of response values in the training subset
 //out: true, if best split found. false, if there were no splits
 
-bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds)
+bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int *numUsed)
 {
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
@@ -569,6 +577,9 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 			pSorted->erase(pSorted->begin() + attrNo);	
 				//it is an empty vector (the attribute is boolean), but we still need to remove it
 		}
+		if(attrIds[splitting.divAttr] == 0)
+			*numUsed += 1;
+
 		attrIds[splitting.divAttr] = 1;
 	}
 	return isnan(bestEval);
@@ -770,10 +781,319 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 		int bestSplitN = (int)bestSplits.size();
 		int randSplit = rand() % bestSplitN;
 		splitting = bestSplits[randSplit];
+		if(attrIds[splitting.divAttr] == 0)
+			*numUsed += 1;
+
 		attrIds[splitting.divAttr] = 1;
 	}
 	return isnan(bestEval);
 }
+
+// use the idea of groupTesting and binarySearch. suppose there are s important variable out of d, to get the exact best split
+// we need O(n*d) computation. if we use groupTesting and binarySearch to get approximate best split, we only need O(n*slog(s)*log(d/s))
+
+
+//Chooses and sets best mse split over all attributes and values when no missing values are
+// present.
+//To compare mse values of splits, we need to calculate only 2 of 3 squared sum components.
+//For each attribute it estimates all splits in _one_pass_ over the sorted data, i.e. O(N)
+//	(trivial algorithm would produce much less code, but the running time would be O(N^2) )
+//Side effect: removes exhausted attributes from the node attribute set
+//in:
+	// nodeV - size (volume) of the training subset
+	// nodeSum - sum of response values in the training subset
+//out: true, if best split found. false, if there were no splits
+
+bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int s, int *numUsed)
+{	
+
+	double bestEval = QNAN; //current value for the best evaluation
+	SplitInfov bestSplits; // all splits that have best (identical) evaluation
+	intv unusedIds;
+	// first evaluate previous used feature and get remaining attrIds to do groupSplit 
+	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
+	{
+		int attr = (*pAttrs)[attrNo];
+		// double penalty = (1 - attrIds[attr])*mu; // 0<=mu<1 penalty
+		if(attrIds[attr]==1){					//used feature
+
+			fipairv* pSortedVals = &(*pSorted)[attrNo];  // pointer to sorted value and index
+
+			bool newSplits = singleSplit(bestSplits, bestEval, attr, pSortedVals, nodeV, nodeSum, squares, rootVar); //update  bestSplits, bestEval								
+			//if an attribute is exhausted, delete it, shift to next iteration
+			if(!newSplits)
+			{
+				pAttrs->erase(pAttrs->begin() + attrNo);
+				pSorted->erase(pSorted->begin() + attrNo);
+			}
+			else
+				attrNo++;
+	}//end if used feature
+	else
+		unusedIds.push_back(attr);
+	}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
+
+// Do groupTest among unusedIds
+	int remain = max(1,s - (*numUsed));
+	int d = (int)unusedIds.size();
+	int subN = d/remain;
+	int sampleN = (int)pItemSet->size();
+	int rep = (remain > 1) ? remain*log(10*remain):1;
+
+	for( int i = 0; i < rep; i++)
+	{
+
+
+		intv subset(subN);// random generate subset of unusedIds with size subN
+
+		random_shuffle( unusedIds.begin(), unusedIds.end() );
+		for(int j = 0; j < subN; j++)
+			subset[j] = unusedIds[j];
+
+		floatvv prefixedSum(subN); // get prefixed sum for training data for column in this subset
+		floatv cur(sampleN);
+		for(int attrNo = 0; attrNo < subN; attrNo++)
+		{	
+			int sampleNo = 0;
+			for (ItemInfov::iterator itemIt = pItemSet->begin(); itemIt != pItemSet->end(); itemIt++)
+				{
+					float value = pData->getValue(itemIt->key, subset[attrNo], TRAIN);
+					cur[sampleNo] += value;
+					sampleNo++;
+				}
+			prefixedSum[attrNo]=cur;
+
+		}
+
+
+		// binary search
+
+		int st = 0;
+		int ed = subN - 1;
+		while(st<ed)
+		{
+			int m = (st+ed)/2;
+			double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
+			double groupSplitval2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
+			// corresponding sorted value and index
+			fipairv tmp1(sampleN); 
+			fipairv tmp2(sampleN);
+			for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
+			{
+				float value1;
+				float value2;
+				if(st==0)
+					value1 = prefixedSum[m][sampleNo];
+				else
+					value1 = prefixedSum[m][sampleNo] - prefixedSum[st - 1][sampleNo];
+				value2 = prefixedSum[ed][sampleNo] - prefixedSum[m][sampleNo];
+
+				tmp1[sampleNo] = fipair(value1, sampleNo);
+				tmp2[sampleNo] = fipair(value2, sampleNo);
+			}
+			sort(tmp1.begin(), tmp1.end());
+			sort(tmp2.begin(), tmp2.end());
+
+
+			fipairv* Ptmp1 = &tmp1;
+			fipairv* Ptmp2 = &tmp2;
+
+
+
+			if( st==m )
+			{
+				bool split1 = singleSplit(bestSplits, groupSplitVal1, subset[m], Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+				if( split1 && (isnan(bestEval) || (groupSplitVal1 < bestEval)) )
+					bestEval = groupSplitVal1;
+			}
+			else
+				bool split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+
+			if( ed==m+1 )
+			{
+				bool split2 = singleSplit(bestSplits, groupSplitVal2, subset[m+1], Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+				if( split2 && (isnan(bestEval) || (groupSplitVal2 < bestEval)) )
+					bestEval = groupSplitVal2;
+			}
+			else
+				bool split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+
+			if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
+				ed = m;
+			else
+				st = m+1;
+
+
+			delete Ptmp1;
+			delete Ptmp2;
+
+		}
+
+	}
+
+
+
+	//choose a random split from those with best mse
+	if(!isnan(bestEval))
+	{
+		int bestSplitN = (int)bestSplits.size();
+		int randSplit = rand() % bestSplitN;
+		splitting = bestSplits[randSplit];
+		if(pData->boolAttr(splitting.divAttr))
+		{//one can split only once on boolean attribute, remove it from the set of attributes
+			int attrNo = erasev(pAttrs, splitting.divAttr);
+			pSorted->erase(pSorted->begin() + attrNo);	
+				//it is an empty vector (the attribute is boolean), but we still need to remove it
+		}
+		if(attrIds[splitting.divAttr] == 0)
+			*numUsed += 1;
+
+		attrIds[splitting.divAttr] = 1;
+	}
+	return isnan(bestEval);
+}
+
+
+bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, fipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu)
+{
+
+	
+		bool newSplits = false;	//true if any splits were added for this attribute
+		if( (attr > -1) && pData->boolAttr(attr))	
+		{//boolean attribute
+			//there is exactly one split for a boolean attribute, evaluate it
+			SplitInfo boolSplit(attr, 0.5);
+			double eval = evalBool(boolSplit, nodeV, nodeSum, squares, rootVar) + mu;
+			if(!isnan(eval))
+
+			{
+
+			newSplits = true;
+
+			//save if this is one of the best splits
+				if(isnan(bestEval) || (eval < bestEval))
+				{
+					bestEval = eval;
+					bestSplits.clear();
+				}
+				if(eval == bestEval)
+					bestSplits.push_back(SplitInfo(boolSplit));
+			}
+		}
+		else //continuous attribute or groupTest
+		{//candidate splits are installed between all pairs of neighbour values (values are sorted)
+		 //all splits are calculated in one pass
+
+		
+			//traverse pSorted[attrNo], create crisp splits between pairs of cases w diff response
+				//and evaluate on the fly
+			
+			//parameters that will be changing for different splits
+			double volume1 = 0;						
+			double volume2 = nodeV;
+			double sum1 = 0;						
+			double sum2 = nodeSum;
+
+			//parameters of traverse
+			bool prevDiff, curDiff; //whether prev or cur attrval had diff response values
+			double prevAttrVal; //previous value of the attribute
+			double prevResp = QNAN; //response value if same for prev attrval 
+			double curAttrVal; //current value of attribute
+			double curResp; //current response, if the same
+
+			//parameters of the set of points that moves from one node to the other
+			double prevTraV, prevTraSum; //for the previous block
+			double curTraV, curTraSum; //for the current block
+			prevTraV = 0; prevTraSum = 0;
+
+			// fipairv* pSortedVals = &(*pSorted)[attrNo];  // pointer to sorted value and index
+			fipairv::iterator pairIt = pSortedVals->begin(); // iterator for that pair
+			while(pairIt != pSortedVals->end())
+			{//on each iteration of this cycle collect info about the block of cases with the
+				//same value of the attribute and if needed, evaluate the split right before it.
+				
+				//initialize current traverse parameters
+				curAttrVal = pairIt->first;
+				curResp = (*pItemSet)[pairIt->second].response;
+				curDiff = false;
+				curTraV = 0;	
+				curTraSum = 0;	
+
+				//get next block, update transition parameters
+				fipairv::iterator sortedEnd = pSortedVals->end();
+				for(;(pairIt != sortedEnd) && (pairIt->first == curAttrVal); pairIt++)
+				{
+					ItemInfo& item = (*pItemSet)[pairIt->second];
+					curTraV ++;
+					curTraSum += item.response;
+					if(!curDiff && (item.response != curResp))
+						curDiff = true;
+				}
+
+				//if there are different responses in previous and current block 
+					//build and evaluate the split between them
+				if(!isnan(prevResp) && (prevDiff || curDiff || (prevResp != curResp)))
+				{
+					newSplits = true;
+					//calculate the "short mse" of the new split - parts of sum of se that are different for different splits
+					//1. update those parameters that we keep
+					volume1 += prevTraV;
+					volume2 -= prevTraV;
+					sum1 += prevTraSum;
+					sum2 -= prevTraSum;
+
+					//2. calculate short mse of the split from them
+					double leftRatio = volume1 / nodeV;
+
+					double mean1 = sum1 / volume1;
+					double mean2 = sum2 / volume2;
+
+					double sqErr1 =  - mean1 * sum1;
+					double sqErr2 =  - mean2 * sum2;
+
+					double eval = ( sqErr1 + sqErr2 + squares )/rootVar + mu;
+			
+					//evaluate the split point, if it is the best (one of the best) so far, keep it
+					if(isnan(bestEval) || (eval < bestEval))
+					{
+						bestEval = eval;
+						if(attr > -1) // only update bestSplits if this is a variable split
+							bestSplits.clear();
+					}
+					if(eval == bestEval)
+					{
+						if(attr > -1) // only update bestSplits if this is a variable split
+						{
+						//create actual split with the split point halfway between attr values
+						SplitInfo goodSplit(attr, (curAttrVal + prevAttrVal) / 2, leftRatio);
+						bestSplits.push_back(goodSplit);
+						}
+					}
+
+					//"restart" prev parameters with this block
+					prevTraV = curTraV;
+					prevTraSum = curTraSum;
+				}//end if(!isnan(prevResp) && (prevDiff || curDiff || (prevResp != curResp)))
+				else
+				{//block was not used, increas "prev" parameters
+					prevTraV += curTraV;
+					prevTraSum += curTraSum;
+				}
+
+				//update previous traverse parameters with values of current
+				prevDiff = curDiff;
+				prevResp = curResp;
+				prevAttrVal = curAttrVal;
+			}//end while(pairIt != pSortedVals->end())				
+	}//end if continuous
+
+return newSplits; 
+}
+
+
+
+
+
 
 //Calculates short sum of squared errors of the boolean split for the data without missing values. 
 //Does not require sorting.

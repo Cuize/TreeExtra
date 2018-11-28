@@ -57,7 +57,7 @@ public:
 	void traverse(int itemNo, double coef, double& ltCoef, double& rtCoef, DATA_SET dset);
 
 	//splits the node; grows two offsprings 
-	bool split(double alpha, double rootVar, double* pEntropy = NULL, double mu=0, int *attrIds = NULL);
+	bool split(double alpha, double rootVar, double* pEntropy = NULL, double mu = 0, int *attrIds = NULL, int s = 20, int* numUsed = NULL);
 
 	//saves the node into a binary file
 	void save(fstream& fsave);
@@ -77,16 +77,23 @@ private:
 	void makeLeaf(double nodeMean); 
 
 	//finds and sets a splitting info with the best MSE
-	bool setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu=0, int *attrIds = NULL);
+	bool setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int *numUsed = NULL);
 
 	//finds and sets a splitting info with the best MSE when missing values present in the data
-	bool setSplitMV(double nodeV, double nodeSum, double squares, double rootVar, double mu=0, int *attrIds = NULL);
+	bool setSplitMV(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int *numUsed = NULL);
+
+	//finds and sets a splitting info with the approximate best MSE, using the idea of groupTest and binarySearch
+	bool setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int s = 20, int *numUsed = NULL);
+
+	// evaluate a single variable split or single group of variables split 
+	bool singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, fipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu = 0 );
 
 	//evaluates boolean split
 	double evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar);
 
 	//evaluates boolean split when missing values present in the data
 	double evalBoolMV(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar, double missV, double missSum);
+
 
 public:
 	CTreeNode*	left;		//pointer to the left child
@@ -98,6 +105,7 @@ private:
 	intv*		pAttrs;		//set of valid attributes in the node	
 	SplitInfo	splitting;	//split (attribute, split point, proportion for missing values)
 	double variance; // variance (sum of square error ) of the node (just for root)
+	
 
 };
 

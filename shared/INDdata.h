@@ -116,7 +116,7 @@ private:
 
 	int trainN;			//number of data points in the train set
 	double trainV;		//sum of weights
-	floatvv train;		//train set data w/o response
+	floatvv train;		//train set data w/o response (want to standardize it because of the usage of groupTest)
 	doublev trainTar;	//train set response
 	doublev trainW;		//train set weights
 	doublev trainR;		//ranges of train set weights

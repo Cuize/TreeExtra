@@ -12,6 +12,7 @@ public:
 	double alpha;		//min proportion of train set in the leaf (controls size of tree)
 	bool rms;			//rms/roc performance metric
 	double mu;          //penalty on new spilt variable for feature selection
+	int s;				//expected number of active features
 
 
 	//file names
@@ -20,5 +21,5 @@ public:
 	string testFName;	//test set
 	string attrFName;	//attributes description 	
 
-	TrainInfo(): bagN(60), seed(1), alpha(0), rms(true), mu(0) {};
+	TrainInfo(): bagN(60), seed(1), alpha(0), rms(true), mu(0), s(20) {};
 };
