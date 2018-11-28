@@ -211,7 +211,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 
 
 
-	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : ( (2*group > d) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
+	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (2*group > d) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
 
 	if(notFound)
 	{//no splittings or they disappeared because of tiny coefficients. This node becomes a leaf
@@ -786,9 +786,8 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 		int bestSplitN = (int)bestSplits.size();
 		int randSplit = rand() % bestSplitN;
 		splitting = bestSplits[randSplit];
-		if(attrIds[splitting.divAttr] == 0)
-			*numUsed += 1;
-
+		// if(attrIds[splitting.divAttr] == 0)
+		// 	*numUsed += 1;
 		attrIds[splitting.divAttr] = 1;
 	}
 	return isnan(bestEval);
