@@ -210,9 +210,9 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int n = (int)pItemSet->size();
 	bool trigger = ( 2*group < d ) && (n > 10*d);
 
-	cout<< "group: " << group << endl;
-	cout<< "d: " << d << endl;
-	cout << "n: "<< n << endl;
+	// cout<< "group: " << group << endl;
+	// cout<< "d: " << d << endl;
+	// cout << "n: "<< n << endl;
 	cout << "triggered :" << trigger << endl;
 
 	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (!trigger) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed) ) );	//finds and sets best split
@@ -856,7 +856,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	fipairv* Ptmp1 = &tmp1;
 	fipairv* Ptmp2 = &tmp2;
 
-	cout<<"remain " << remain <<" d "<< d <<" subN " <<subN << " sampleN "<<sampleN<<" rep "<< rep <<endl;
+	// cout<<"remain " << remain <<" d "<< d <<" subN " <<subN << " sampleN "<<sampleN<<" rep "<< rep <<endl;
 
 	for( int i = 0; i < rep; i++)
 	{
