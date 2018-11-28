@@ -215,7 +215,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			}
 			if(ma > mi){
 				for(int i = 0; i < caseNo; i++)
-					train[i][j] = (train[i][j] - mi)/(ma - mi)
+					train[i][j] = (train[i][j] - mi)/(ma - mi);
 			}
 		}
 
