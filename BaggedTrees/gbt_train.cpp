@@ -141,6 +141,7 @@ int main(int argc, char* argv[])
 				 ti.attrFName.c_str());
 	CTree::setData(data);
 	CTreeNode::setData(data);
+	cout << "flag1" << endl;
 
 //2.a) Start thread pool
 #ifndef _WIN32
@@ -152,7 +153,7 @@ int main(int argc, char* argv[])
 	int attrN = data.getAttrN();
 	int attrIds[attrN];       
 	fill_n(attrIds, attrN, 0); // initialize all attrIds 0:notused 1:used
-	int* numUsed; // number of used features
+	int* numUsed = NULL; // number of used features
 	*numUsed = 0;
 	if(topAttrN == -1)
 		topAttrN = attrN;
