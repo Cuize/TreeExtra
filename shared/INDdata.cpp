@@ -380,7 +380,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		for(int j = 0; j < cols; j++){
 			float ma = valid[0][j];
 			float mi = valid[0][j];
-			for(int i = 1; i < caseNo; i++){
+			for(int i = 1; i < validN; i++){
 				ma = max(ma,valid[i][j]);
 				mi = min(mi,valid[i][j]);
 			}
