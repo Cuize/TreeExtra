@@ -217,6 +217,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	// conditions to use setGroupSplit..
 	int remain = max(1,s - (*numUsed));
 	int n = (int)pItemSet->size();
+	int d = pData->getAttrN();
 	bool trigger = ( remain == 1 ) && (n > 10*d);
 
 	// cout<< "group: " << group << endl;
