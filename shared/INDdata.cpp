@@ -147,7 +147,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			if(doOut && ((caseNo + 1)% 100000 == 0))
 				cout << "\tRead " << caseNo + 1 << " lines..." << endl;
 			
-			floatv item;	//single data point
+			doublev item;	//single data point
 			try {
 				readData(buf, fin.gcount(), item, colN);
 			
@@ -224,7 +224,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		// cout << "trainColNumber:  " << train[0].size()<<endl;  
 
 		prefixedSum.resize(attrN);
-		floatv cur(trainN);
+		doublev cur(trainN);
 		for(int attrNo = 0; attrNo < attrN; attrNo++)
 		{	
 			for (int j = 0; j < trainN; j++)
@@ -299,7 +299,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			if (doOut && ((caseNo + 1) % 100000 == 0))
 				cout << "\tRead " << caseNo + 1 << " lines..." << endl;
 			
-			floatv item;	//single data point
+			doublev item;	//single data point
 			try {
 				readData(buf, fvalid.gcount(), item, colN);
 			} catch (TE_ERROR err) {
@@ -345,7 +345,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			if (doOut && ((caseNo + 1) % 100000 == 0))
 				cout << "\tRead " << caseNo + 1 << " lines...\n";
 
-			floatv item;	//single data point
+			doublev item;	//single data point
 			try {
 				readData(buf, ftest.gcount(), item, colN);
 			} catch (TE_ERROR err) {
@@ -405,7 +405,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 //Gets a line of text, returns a vector with data points 
 //Missing values should be encoded as '?', they get converted to NANs
 //hasMV (class member) value becomes true if there are missing values (otherwise not changed)
-void INDdata::readData(char* buf, streamsize buflen, floatv& retv, int retvlen)
+void INDdata::readData(char* buf, streamsize buflen, doublev& retv, int retvlen)
 {
 	//remove spaces (there can be spaces in nominal values, space should not be a delimiter
 	//and also should be ignored when it is next to a number)
@@ -761,7 +761,7 @@ void INDdata::getValues(int attr1Id, int attr2Id, ddpairv& values)
 //in: values is a vector of (attrId, attrVal) pairs
 int INDdata::addTestItem(idpairv& values) 
 {
-	test.resize(testN + 1, floatv(attrN, QNAN));
+	test.resize(testN + 1, doublev(attrN, QNAN));
 	testTar.resize(testN + 1, QNAN);
 	testN++;
 

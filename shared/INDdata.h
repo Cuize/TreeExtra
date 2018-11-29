@@ -99,7 +99,7 @@ public:
 
 private:
 	//gets a line of text, returns a vector with data points
-	void readData(char* buf, streamsize buflen, floatv& retv, int retvlen); 
+	void readData(char* buf, streamsize buflen, doublev& retv, int retvlen); 
 
 	//create versions of bootstrap data sorted by active continuous attributes 
 	void sortItems(); 
@@ -120,18 +120,18 @@ private:
 
 	int trainN;			//number of data points in the train set
 	double trainV;		//sum of weights
-	floatvv train;		//train set data w/o response 
+	doublevv train;		//train set data w/o response 
 	doublev trainTar;	//train set response
 	doublev trainW;		//train set weights
 	doublev trainR;		//ranges of train set weights
 
 	int validN;			//number of data points in the validation set
-	floatvv valid;		//validation set data w/o response
+	doublevv valid;		//validation set data w/o response
 	doublev validTar;	//validation set response
 	doublev validW;		//validation set weights
 
 	int testN;			//number of data points in the test set
-	floatvv test;		//test set data w/o response
+	doublevv test;		//test set data w/o response
 	doublev testTar;	//test set response
 	doublev testW;		//test set weights
 
@@ -143,7 +143,7 @@ private:
 	fipairvv sortedItems; //several copies of sorted data points in the bag
 							//separate vector for sorting by each attribute
 							//each data point represented as (id, attrvalue) pair
-	floatvv prefixedSum; // for groupTest and binarySearch
+	doublevv prefixedSum; // for groupTest and binarySearch
 
 	bool hasMV;			//data has missing values
 	bool hasActiveMV;	//data has missing values in active attributes

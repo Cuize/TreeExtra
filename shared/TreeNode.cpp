@@ -854,10 +854,10 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	int sampleN = (int)pItemSet->size();
 	// cout << "sampleN: " << sampleN << endl;
 	// corresponding sorted value and index
-	fipairv tmp1(sampleN); 
-	fipairv tmp2(sampleN);
-	fipairv* Ptmp1 = &tmp1;
-	fipairv* Ptmp2 = &tmp2;
+	dipairv tmp1(sampleN); 
+	dipairv tmp2(sampleN);
+	dipairv* Ptmp1 = &tmp1;
+	dipairv* Ptmp2 = &tmp2;
 
 	// binary search
 
@@ -874,13 +874,13 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 		{
 			int caseNo = (*pItemSet)[sampleNo].key;
-			float value1 = pData->getRangeSum(caseNo, st, m);
-			float value2 = pData->getRangeSum(caseNo, m+1, ed);
+			double value1 = pData->getRangeSum(caseNo, st, m);
+			double value2 = pData->getRangeSum(caseNo, m+1, ed);
 			// cout << "caseNo: " << caseNo << endl;
 			// cout << "value1: " << value1 << endl;
 			// cout << "value2: " << value2 << endl;
-			(*Ptmp1)[sampleNo] = fipair(value1, sampleNo);
-			(*Ptmp2)[sampleNo] = fipair(value2, sampleNo);
+			(*Ptmp1)[sampleNo] = dipair(value1, sampleNo);
+			(*Ptmp2)[sampleNo] = dipair(value2, sampleNo);
 		}
 		sort(Ptmp1->begin(), Ptmp1->end());
 		sort(Ptmp2->begin(), Ptmp2->end());
