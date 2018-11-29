@@ -218,7 +218,8 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int remain = max(1,s - (*numUsed));
 	int n = (int)pItemSet->size();
 	int d = pData->getAttrN();
-	bool trigger = ( remain == 1 ) && (n > 10*d);
+	int d0 = pAttrs->size();
+	bool trigger = ( remain == 1 ) && (n > 10*d) && (3*d0 > d);
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
