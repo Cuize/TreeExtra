@@ -86,7 +86,7 @@ private:
 	bool setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int s = 20, int *numUsed = NULL);
 
 	// evaluate a single variable split or single group of variables split 
-	bool singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, dipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu = 0 );
+	bool singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, fipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu = 0 );
 
 	//evaluates boolean split
 	double evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar);
