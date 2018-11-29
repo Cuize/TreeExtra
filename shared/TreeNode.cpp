@@ -875,16 +875,16 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 			int caseNo = (*pItemSet)[sampleNo].key;
 			float value1 = pData->getRangeSum(caseNo, st, m);
 			float value2 = pData->getRangeSum(caseNo, m+1, ed);
-			cout << "caseNo: " << caseNo << endl;
-			cout << "value1: " << value1 << endl;
-			cout << "value2: " << value2 << endl;
+			// cout << "caseNo: " << caseNo << endl;
+			// cout << "value1: " << value1 << endl;
+			// cout << "value2: " << value2 << endl;
 			(*Ptmp1)[sampleNo] = fipair(value1, sampleNo);
 			(*Ptmp2)[sampleNo] = fipair(value2, sampleNo);
 		}
 		sort(Ptmp1->begin(), Ptmp1->end());
 		sort(Ptmp2->begin(), Ptmp2->end());
 
-		 cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
+		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
 		if( st==m )
 		{
@@ -901,8 +901,8 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		else
 			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 
-		 cout << "splitval1: " << groupSplitVal1 << "splitval2: " << groupSplitVal2 << endl;
-		 cout << "split1: " << split1 << "split2: " << split2 << endl;
+		 // cout << "splitval1: " << groupSplitVal1 << "splitval2: " << groupSplitVal2 << endl;
+		 // cout << "split1: " << split1 << "split2: " << split2 << endl;
 
 		if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
 			ed = m;
