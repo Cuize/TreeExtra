@@ -851,6 +851,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 // Do groupTest among unusedIds
 	
 	int sampleN = (int)pItemSet->size();
+	cout << "sampleN: " << sampleN << endl;
 	// corresponding sorted value and index
 	fipairv tmp1(sampleN); 
 	fipairv tmp2(sampleN);
@@ -874,6 +875,9 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 			int caseNo = (*pItemSet)[sampleNo].key;
 			float value1 = pData->getRangeSum(caseNo, st, m);
 			float value2 = pData->getRangeSum(caseNo, m+1, ed);
+			cout << "caseNo: " << caseNo << endl;
+			cout << "value1: " << value1 << endl;
+			cout << "value2: " << value2 << endl;
 			(*Ptmp1)[sampleNo] = fipair(value1, sampleNo);
 			(*Ptmp2)[sampleNo] = fipair(value2, sampleNo);
 		}
@@ -990,7 +994,7 @@ bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, 
 			while(pairIt != pSortedVals->end())
 			{//on each iteration of this cycle collect info about the block of cases with the
 				//same value of the attribute and if needed, evaluate the split right before it.
-				cout<< pairIt->first << endl;
+				// cout<< pairIt->first << endl;
 				//initialize current traverse parameters
 				curAttrVal = pairIt->first;
 				curResp = (*pItemSet)[pairIt->second].response;
