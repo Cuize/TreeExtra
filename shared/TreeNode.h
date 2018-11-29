@@ -105,6 +105,7 @@ private:
 	intv*		pAttrs;		//set of valid attributes in the node	
 	SplitInfo	splitting;	//split (attribute, split point, proportion for missing values)
 	double variance; // variance (sum of square error ) of the node (just for root)
+	// floatvv*	pPrefixedSum; // prefixedSum for unused columns with cases in current itemSet (for doing groupTest and binarySearch)
 	
 
 };

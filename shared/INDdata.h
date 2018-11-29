@@ -40,6 +40,10 @@ public:
 	//gets sorted indexes of current training data
 	void getSortedData(fipairvv& sorted);
 
+
+	//for quick implementation of groupTest and binarySearch
+	float getRangeSum(int caseNo, int stIdx, int edIdx);
+
 	//gets a value of a given attribute for a given case in a given data set
 	double getValue(int itemNo, int attrId, DATA_SET dset);
 
@@ -116,7 +120,7 @@ private:
 
 	int trainN;			//number of data points in the train set
 	double trainV;		//sum of weights
-	floatvv train;		//train set data w/o response (want to standardize it because of the usage of groupTest)
+	floatvv train;		//train set data w/o response 
 	doublev trainTar;	//train set response
 	doublev trainW;		//train set weights
 	doublev trainR;		//ranges of train set weights
@@ -139,6 +143,7 @@ private:
 	fipairvv sortedItems; //several copies of sorted data points in the bag
 							//separate vector for sorting by each attribute
 							//each data point represented as (id, attrvalue) pair
+	floatvv prefixedSum; // for groupTest and binarySearch
 
 	bool hasMV;			//data has missing values
 	bool hasActiveMV;	//data has missing values in active attributes

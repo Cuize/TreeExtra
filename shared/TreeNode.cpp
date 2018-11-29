@@ -134,6 +134,8 @@ CTreeNode::CTreeNode(const CTreeNode& rhs)
 //This function is intended for root nodes only
 void CTreeNode::setRoot()
 {
+
+
 	del();	//delete old tree
 
 	variance=0;
@@ -149,6 +151,15 @@ void CTreeNode::setRoot()
 	if(pItemSet == NULL)
 		pItemSet = new ItemInfov();
 	pData->getCurBag(*pItemSet);
+
+	// if(pPrefixedSum == NULL)
+	// 	pPrefixedSum = new floatvv();
+	// pData->getPrefixedSum(*pPrefixedSum,attrIds);
+
+
+
+
+
 }
 
 //input: predictions for train set data points produced by the rest of the model (not by this tree)	
@@ -205,10 +216,8 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 //evaluate all good splits and choose the one with the best evaluation, also approximate split by groupTest and binarySearch
 	// conditions to use setGroupSplit..
 	int remain = max(1,s - (*numUsed));
-	int d = max(1, (int)(pAttrs->size()) - (*numUsed));
-	int group = remain * log(10*remain) * max(1, (int)log2(d/remain));
 	int n = (int)pItemSet->size();
-	bool trigger = ( 2*group < d ) && (n > 10*d);
+	bool trigger = ( remain == 1 ) && (n > 10*d);
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
@@ -817,7 +826,6 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
-	intv unusedIds;
 	// first evaluate previous used feature and get remaining attrIds to do groupSplit 
 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 	{
@@ -839,111 +847,71 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	}//end if used feature
 	else
 	{
-		unusedIds.push_back(attr);
 		attrNo++;
 	}
 	}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 
 // Do groupTest among unusedIds
-	int remain = max(1,s - (*numUsed));
-	int d = (int)unusedIds.size();
-	int subN = d/remain;
+	
 	int sampleN = (int)pItemSet->size();
-	int rep = (remain > 1) ? remain*log(10*remain):1;
 	// corresponding sorted value and index
 	fipairv tmp1(sampleN); 
 	fipairv tmp2(sampleN);
 	fipairv* Ptmp1 = &tmp1;
 	fipairv* Ptmp2 = &tmp2;
 
-	// cout<<"remain " << remain <<" d "<< d <<" subN " <<subN << " sampleN "<<sampleN<<" rep "<< rep <<endl;
+	// binary search
 
-	for( int i = 0; i < rep; i++)
+	int st = 0;
+	int ed = pData->getAttrN() - 1;
+	while(st<ed)
 	{
+		int m = (st+ed)/2;
+		double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
+		double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
+		bool split1;
+		bool split2;
 
-		// cout << " #rep: " << i+1 <<endl;
-		intv subset(subN);// random generate subset of unusedIds with size subN
-
-		random_shuffle( unusedIds.begin(), unusedIds.end() );
-		for(int j = 0; j < subN; j++)
-			subset[j] = unusedIds[j];
-
-		floatvv prefixedSum(subN); // get prefixed sum for training data for column in this subset
-		floatv cur(sampleN);
-		for(int attrNo = 0; attrNo < subN; attrNo++)
-		{	
-			int sampleNo = 0;
-			for (ItemInfov::iterator itemIt = pItemSet->begin(); itemIt != pItemSet->end(); itemIt++)
-				{
-					float value = pData->getValue(itemIt->key, subset[attrNo], TRAIN);
-					cur[sampleNo] += value;
-					sampleNo++;
-				}
-			prefixedSum[attrNo]=cur;
-
-		}
-
-
-		// binary search
-
-		int st = 0;
-		int ed = subN - 1;
-		while(st<ed)
+		for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 		{
-			int m = (st+ed)/2;
-			double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
-			double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
-			bool split1;
-			bool split2;
+			int caseNo = (*pItemSet)[sampleNo].key;
+			float value1 = pData->getRangeSum(caseNo, st, m);
+			float value2 = pData->getRangeSum(caseNo, m+1, ed);
+			(*Ptmp1)[sampleNo] = fipair(value1, sampleNo);
+			(*Ptmp2)[sampleNo] = fipair(value2, sampleNo);
+		}
+		sort(Ptmp1->begin(), Ptmp1->end());
+		sort(Ptmp2->begin(), Ptmp2->end());
 
-			for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
-			{
-				float value1;
-				float value2;
-				if(st==0)
-					value1 = prefixedSum[m][sampleNo];
-				else
-					value1 = prefixedSum[m][sampleNo] - prefixedSum[st - 1][sampleNo];
-				value2 = prefixedSum[ed][sampleNo] - prefixedSum[m][sampleNo];
+		// cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
-				(*Ptmp1)[sampleNo] = fipair(value1, sampleNo);
-				(*Ptmp2)[sampleNo] = fipair(value2, sampleNo);
-			}
-			sort(Ptmp1->begin(), Ptmp1->end());
-			sort(Ptmp2->begin(), Ptmp2->end());
-
-
-
-			// cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
-
-
-			if( st==m )
-			{
-				split1 = singleSplit(bestSplits, bestEval, subset[m], Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
-
-			}
-			else
-				split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
-
-			if( ed==m+1 )
-			{
-				split2 = singleSplit(bestSplits, bestEval, subset[m+1], Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
-			}
-			else
-				split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
-
-			// cout << "splitval1: " << groupSplitVal1 << "splitval2: " << groupSplitVal2 << endl;
-
-			if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
-				ed = m;
-			else
-				st = m+1;
-
-
+		if( st==m )
+		{
+			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 
 		}
+		else
+			split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+
+		if( ed==m+1 )
+		{
+			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+		}
+		else
+			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+
+		// cout << "splitval1: " << groupSplitVal1 << "splitval2: " << groupSplitVal2 << endl;
+
+		if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
+			ed = m;
+		else
+			st = m+1;
+
+
 
 	}
+
+	
 
 
 

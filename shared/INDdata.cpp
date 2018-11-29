@@ -219,6 +219,21 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		// 	}
 		// }
 
+		// compute prefixedSum 
+
+		prefixedSum.resize(attrN);
+		floatv cur(trainN);
+		for(int attrNo = 0; attrNo < attrN; attrNo++)
+		{	
+			for (int j = 0; j < trainN; j++)
+				cur[j] += train[j][attrNo];
+			prefixedSum[attrNo]=cur;
+
+		}
+
+
+
+
 
 
 		double trainStD = getTarStD(TRAIN);
@@ -546,6 +561,19 @@ void INDdata::getCurBag(ItemInfov& itemSet)
 //			itemSet[i].coef = trainW[bootstrap[i]];
 	}
 }
+
+
+//for quick implementation of groupTest and binarySearch
+float INDdata::getRangeSum(int caseNo, int stIdx, int edIdx)
+{
+	float ans = prefixedSum[edIdx][caseNo];
+	if(stIdx > 0)
+		ans -= prefixedSum[stIdx - 1][caseNo];
+	return ans;
+	
+
+}
+
 
 //Returns ids and responses of data points in the current bag
 int INDdata::getCurBag(intv& bagData, doublev& bagTar)
