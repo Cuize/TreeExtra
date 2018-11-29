@@ -42,7 +42,7 @@ public:
 
 
 	//for quick implementation of groupTest and binarySearch
-	float getRangeSum(int caseNo, int stIdx, int edIdx);
+	double getRangeSum(int caseNo, int stIdx, int edIdx);
 
 	//gets a value of a given attribute for a given case in a given data set
 	double getValue(int itemNo, int attrId, DATA_SET dset);
