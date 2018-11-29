@@ -867,8 +867,8 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		int m = (st+ed)/2;
 		double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
 		double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
-		bool split1;
-		bool split2;
+		bool split1 = false;
+		bool split2 = false;
 
 		for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 		{
@@ -886,7 +886,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
-		if( st==m )
+		if( (st==m) && pData->isActive(m) )
 		{
 			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 
@@ -894,7 +894,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		else
 			split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 
-		if( ed==m+1 )
+		if( (ed==m+1) && pData->isActive(m+1) )
 		{
 			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 		}
@@ -942,7 +942,7 @@ bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, 
 
 	
 		bool newSplits = false;	//true if any splits were added for this attribute
-		if( (attr > -1) && pData->boolAttr(attr))	
+		if( (attr > -1) && (pData->boolAttr(attr)))	
 		{//boolean attribute
 			//there is exactly one split for a boolean attribute, evaluate it
 			SplitInfo boolSplit(attr, 0.5);
