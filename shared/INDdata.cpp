@@ -204,20 +204,20 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 
-		// // standardize the train set for groupSplit
-		// int cols = (train[0]).size();
-		// for(int j = 0; j < cols; j++){
-		// 	float ma = train[0][j];
-		// 	float mi = train[0][j];
-		// 	for(int i = 1; i < caseNo; i++){
-		// 		ma = max(ma,train[i][j]);
-		// 		mi = min(mi,train[i][j]);
-		// 	}
-		// 	if(ma > mi){
-		// 		for(int i = 0; i < caseNo; i++)
-		// 			train[i][j] = (train[i][j] - mi)/(ma - mi);
-		// 	}
-		// }
+		// standardize the train set for groupSplit
+		int cols = (train[0]).size();
+		for(int j = 0; j < cols; j++){
+			float ma = train[0][j];
+			float mi = train[0][j];
+			for(int i = 1; i < caseNo; i++){
+				ma = max(ma,train[i][j]);
+				mi = min(mi,train[i][j]);
+			}
+			if(ma > mi){
+				for(int i = 0; i < caseNo; i++)
+					train[i][j] = (train[i][j] - mi)/(ma - mi);
+			}
+		}
 
 		// compute prefixedSum 
 		// cout << "attrN: " << attrN << endl;
@@ -236,20 +236,20 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 
-		// debugging test
-		for(int i = 0; i < 10; i++)
-			{
-				cout<<i<<"th row"<<endl<<endl;
+		// // debugging test
+		// for(int i = 0; i < 10; i++)
+		// 	{
+		// 		cout<<i<<"th row"<<endl<<endl;
 
-				for(int j = 0; j < attrN; j++)
-				{
-					cout<<j<<" th attribute is active? " << isActive(j)<<endl;
-					cout<<j<<" th attribute value: " << train[i][j]<<endl;
-					cout<<j<<" th attribute value by me: "<< getRangeSum(i,j,j)<<endl;
+		// 		for(int j = 0; j < attrN; j++)
+		// 		{
+		// 			cout<<j<<" th attribute is active? " << isActive(j)<<endl;
+		// 			cout<<j<<" th attribute value: " << train[i][j]<<endl;
+		// 			cout<<j<<" th attribute value by me: "<< getRangeSum(i,j,j)<<endl;
 
-				}
-				cout<<endl<<endl<<"end of "<<i<<"th row"<<endl<<endl;
-			}
+		// 		}
+		// 		cout<<endl<<endl<<"end of "<<i<<"th row"<<endl<<endl;
+		// 	}
 
 
 
@@ -371,7 +371,36 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 	}
 	else	//no test set
 		testN = 0;
+
+
+
+
+		// standardize the validation set for groupSplit
+		int cols = (valid[0]).size();
+		for(int j = 0; j < cols; j++){
+			float ma = valid[0][j];
+			float mi = valid[0][j];
+			for(int i = 1; i < caseNo; i++){
+				ma = max(ma,valid[i][j]);
+				mi = min(mi,valid[i][j]);
+			}
+			if(ma > mi){
+				for(int i = 0; i < validN; i++)
+					valid[i][j] = (valid[i][j] - mi)/(ma - mi);
+			}
+		}
+
+
+
+
+
+
 }
+
+
+
+
+
 
 //Gets a line of text, returns a vector with data points 
 //Missing values should be encoded as '?', they get converted to NANs
