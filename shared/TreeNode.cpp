@@ -828,11 +828,12 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
 	// first evaluate previous used feature and get remaining attrIds to do groupSplit 
-	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
+	for(int attrNo = 0; attrNo < (int)pAttrs->size(); attrNo++)
 	{
 		int attr = (*pAttrs)[attrNo];
 		// double penalty = (1 - attrIds[attr])*mu; // 0<=mu<1 penalty
-		if(attrIds[attr]==1){					//used feature
+		if(attrIds[attr]==1)
+		{					//used feature
 
 			fipairv* pSortedVals = &(*pSorted)[attrNo];  // pointer to sorted value and index
 
@@ -843,14 +844,9 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 				pAttrs->erase(pAttrs->begin() + attrNo);
 				pSorted->erase(pSorted->begin() + attrNo);
 			}
-			else
-				attrNo++;
-	}//end if used feature
-	else
-	{
-		attrNo++;
+		
+		}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 	}
-	}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 
 // Do groupTest among unusedIds
 	
@@ -884,7 +880,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		sort(Ptmp1->begin(), Ptmp1->end());
 		sort(Ptmp2->begin(), Ptmp2->end());
 
-		// cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
+		 cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
 		if( st==m )
 		{
