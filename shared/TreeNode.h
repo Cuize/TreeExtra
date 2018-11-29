@@ -86,7 +86,7 @@ private:
 	bool setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu = 0, int *attrIds = NULL, int s = 20, int *numUsed = NULL);
 
 	// evaluate a single variable split or single group of variables split 
-	bool singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, fipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu = 0 );
+	bool singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, dipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu = 0 );
 
 	//evaluates boolean split
 	double evalBool(SplitInfo& canSplit, double nodeV, double nodeSum, double squares, double rootVar);
@@ -101,7 +101,7 @@ public:
 
 private:
 	ItemInfov*	pItemSet;	//subset of the training set that belongs to the node during training
-	fipairvv*   pSorted;	//current itemset indexes sorted by value of attribute
+	dipairvv*   pSorted;	//current itemset indexes sorted by value of attribute
 	intv*		pAttrs;		//set of valid attributes in the node	
 	SplitInfo	splitting;	//split (attribute, split point, proportion for missing values)
 	double variance; // variance (sum of square error ) of the node (just for root)

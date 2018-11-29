@@ -38,7 +38,7 @@ public:
 	int getCurBag(intv& bagData, doublev& bagTar);
 
 	//gets sorted indexes of current training data
-	void getSortedData(fipairvv& sorted);
+	void getSortedData(dipairvv& sorted);
 
 
 	//for quick implementation of groupTest and binarySearch
@@ -140,7 +140,7 @@ private:
 	intv oobData;		//indexes of out-of-bag data points
 	doublev oobTar;		//targets for out-of-bag data points
 
-	fipairvv sortedItems; //several copies of sorted data points in the bag
+	dipairvv sortedItems; //several copies of sorted data points in the bag
 							//separate vector for sorting by each attribute
 							//each data point represented as (id, attrvalue) pair
 	doublevv prefixedSum; // for groupTest and binarySearch

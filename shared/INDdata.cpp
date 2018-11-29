@@ -534,9 +534,9 @@ void INDdata::sortItems()
 		{
 			for(int itemNo = 0; itemNo < sampleN; itemNo++)
 			{
-				float value = train[bootstrap[itemNo]][attrs[attrNo]];
+				double value = train[bootstrap[itemNo]][attrs[attrNo]];
 				if(!isnan(value))
-					sortedItems[attrNo].push_back(fipair(value, itemNo));
+					sortedItems[attrNo].push_back(dipair(value, itemNo));
 			}
 			sort(sortedItems[attrNo].begin(), sortedItems[attrNo].end());
 		}
@@ -641,7 +641,7 @@ int INDdata::getCurBag(intv& bagData, doublev& bagTar)
 }
 
 //Creates a copy of sortedItems
-void INDdata::getSortedData(fipairvv& sorted)
+void INDdata::getSortedData(dipairvv& sorted)
 {
 	sorted = sortedItems;
 }
@@ -894,23 +894,23 @@ void INDdata::correlations(string trainFName)
 	{
 		for(size_t itemNo = 0; itemNo < itemN; itemNo++)
 		{
-			float value = train[bootstrap[itemNo]][attrs[attrNo]];
+			double value = train[bootstrap[itemNo]][attrs[attrNo]];
 			if(isnan(value))
 				throw CORR_MV_ERR;
 
-			sortedItems[attrNo].push_back(fipair(value, itemNo));
+			sortedItems[attrNo].push_back(dipair(value, itemNo));
 		}
 		sort(sortedItems[attrNo].begin(), sortedItems[attrNo].end());
 		
 		//replace actual values with ranks. Ties get average rank.
 		int lastDone = -1;
-		float curVal = sortedItems[attrNo][0].first;
+		double curVal = sortedItems[attrNo][0].first;
 		for(size_t itemNo = 1; itemNo <= itemN; itemNo++)
 			if((itemNo == itemN) || (sortedItems[attrNo][itemNo].first != curVal))
 			{
 				if(itemNo != itemN)
 					curVal = sortedItems[attrNo][itemNo].first;
-				float rank = (float)((lastDone + itemNo) / 2.0 + 1);
+				double rank = (double)((lastDone + itemNo) / 2.0 + 1);
 				for(size_t fillNo = lastDone + 1; fillNo < itemNo; fillNo++)
 					sortedItems[attrNo][fillNo].first = rank;
 				lastDone = itemNo - 1;
