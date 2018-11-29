@@ -248,7 +248,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 					cout<<"jth attribute value by me: "<< getRangeSum(0,j,j)<<endl;
 
 				}
-				cout<<ednl<<endl<<"end of "<<i<<"th row"<<endl<<endl;
+				cout<<endl<<endl<<"end of "<<i<<"th row"<<endl<<endl;
 			}
 
 
