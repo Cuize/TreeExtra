@@ -236,6 +236,21 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 
+		// debugging test
+		for(int i = 0; i < 10; i++)
+			{
+				cout<<i<<"th row"<<endl<<endl;
+
+				for(int j = 0; j < attrN; j++)
+				{
+					cout<<"jth attribute is active? " << isActive(j)<<endl;
+					cout<<"jth attribute value: " << train[0][j]<<endl;
+					cout<<"jth attribute value by me: "<< getRangeSum(0,j,j)<<endl;
+
+				}
+				cout<<ednl<<endl<<"end of "<<i<<"th row"<<endl<<endl;
+			}
+
 
 
 
