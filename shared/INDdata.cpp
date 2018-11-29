@@ -220,15 +220,18 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		// }
 
 		// compute prefixedSum 
-		cout << "attrN: " << attrN << endl;
-		cout << "trainColNumber:  " << train[0].size()<<endl;  
+		// cout << "attrN: " << attrN << endl;
+		// cout << "trainColNumber:  " << train[0].size()<<endl;  
 
 		prefixedSum.resize(attrN);
 		floatv cur(trainN);
 		for(int attrNo = 0; attrNo < attrN; attrNo++)
 		{	
 			for (int j = 0; j < trainN; j++)
-				cur[j] += train[j][attrNo];
+			{
+				if(!isnan(train[j][attrNo]))
+					cur[j] += train[j][attrNo];
+			}
 			prefixedSum[attrNo]=cur;
 
 		}

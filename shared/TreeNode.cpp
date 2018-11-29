@@ -851,7 +851,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 // Do groupTest among unusedIds
 	
 	int sampleN = (int)pItemSet->size();
-	cout << "sampleN: " << sampleN << endl;
+	// cout << "sampleN: " << sampleN << endl;
 	// corresponding sorted value and index
 	fipairv tmp1(sampleN); 
 	fipairv tmp2(sampleN);
