@@ -990,7 +990,7 @@ bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, 
 			while(pairIt != pSortedVals->end())
 			{//on each iteration of this cycle collect info about the block of cases with the
 				//same value of the attribute and if needed, evaluate the split right before it.
-				cout<< pairIt << endl;
+				cout<< pairIt->first << endl;
 				//initialize current traverse parameters
 				curAttrVal = pairIt->first;
 				curResp = (*pItemSet)[pairIt->second].response;
