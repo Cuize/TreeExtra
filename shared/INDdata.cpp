@@ -207,8 +207,8 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		// standardize the train set for groupSplit
 		int cols = (train[0]).size();
 		for(int j = 0; j < cols; j++){
-			float ma = train[0][j];
-			float mi = train[0][j];
+			double ma = train[0][j];
+			double mi = train[0][j];
 			for(int i = 1; i < caseNo; i++){
 				ma = max(ma,train[i][j]);
 				mi = min(mi,train[i][j]);
@@ -378,8 +378,8 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		// standardize the validation set for groupSplit
 		int cols = (valid[0]).size();
 		for(int j = 0; j < cols; j++){
-			float ma = valid[0][j];
-			float mi = valid[0][j];
+			double ma = valid[0][j];
+			double mi = valid[0][j];
 			for(int i = 1; i < validN; i++){
 				ma = max(ma,valid[i][j]);
 				mi = min(mi,valid[i][j]);
@@ -613,9 +613,9 @@ void INDdata::getCurBag(ItemInfov& itemSet)
 
 
 //for quick implementation of groupTest and binarySearch
-float INDdata::getRangeSum(int caseNo, int stIdx, int edIdx)
+double INDdata::getRangeSum(int caseNo, int stIdx, int edIdx)
 {
-	float ans = prefixedSum[edIdx][caseNo];
+	double ans = prefixedSum[edIdx][caseNo];
 	if(stIdx > 0)
 		ans -= prefixedSum[stIdx - 1][caseNo];
 	return ans;
@@ -766,7 +766,7 @@ int INDdata::addTestItem(idpairv& values)
 	testN++;
 
 	for(int valNo = 0; valNo < (int)values.size(); valNo++)
-		test[testN - 1][values[valNo].first] = (float)values[valNo].second;
+		test[testN - 1][values[valNo].first] = (double)values[valNo].second;
 
 	return testN - 1;
 }
