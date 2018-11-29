@@ -243,9 +243,9 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 				for(int j = 0; j < attrN; j++)
 				{
-					cout<<"jth attribute is active? " << isActive(j)<<endl;
-					cout<<"jth attribute value: " << train[0][j]<<endl;
-					cout<<"jth attribute value by me: "<< getRangeSum(0,j,j)<<endl;
+					cout<<j<<" th attribute is active? " << isActive(j)<<endl;
+					cout<<j<<" th attribute value: " << train[i][j]<<endl;
+					cout<<j<<" th attribute value by me: "<< getRangeSum(i,j,j)<<endl;
 
 				}
 				cout<<endl<<endl<<"end of "<<i<<"th row"<<endl<<endl;
