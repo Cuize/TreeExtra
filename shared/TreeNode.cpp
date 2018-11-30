@@ -874,8 +874,8 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 		{
 			int caseNo = (*pItemSet)[sampleNo].key;
-			float value1 = pData->getRangeSum(caseNo, st, m);
-			float value2 = pData->getRangeSum(caseNo, m+1, ed);
+			double value1 = pData->getRangeSum(caseNo, st, m);
+			double value2 = pData->getRangeSum(caseNo, m+1, ed);
 			// cout << "caseNo: " << caseNo << endl;
 			// cout << "value1: " << value1 << endl;
 			// cout << "value2: " << value2 << endl;
