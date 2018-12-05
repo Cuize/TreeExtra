@@ -21,7 +21,7 @@ public:
 #endif
 
 	//constructor 
-	CTree(double alpha = 0, double mu = 0, int *attrIds = NULL, int expectNum = 20, int *numUsed = NULL , int *compN = NULL; double variance = 0); 
+	CTree(double alpha = 0, double mu = 0, int *attrIds = NULL, int expectNum = 20, int *numUsed = NULL , int *compN = NULL, double variance = 0); 
 
 	double getVariance(){return variance;}
 
