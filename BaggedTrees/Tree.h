@@ -21,7 +21,7 @@ public:
 #endif
 
 	//constructor 
-	CTree(double alpha = 0, double mu = 0, int *attrIds = NULL, int expectNum = 20, int *numUsed = NULL , int *compN = NULL, double variance = 0); 
+	CTree(double alpha = 0, double mu = 0, int *attrIds = NULL, int expectNum = 20, int *numUsed = NULL , double *compN = NULL, double variance = 0); 
 
 	double getVariance(){return variance;}
 
@@ -67,7 +67,7 @@ private:
 struct JobData
 {	
 	JobData(nodeip in_curNH, nodehstack* in_pNodes, TCondition* in_pNodesCond, int* in_pToDoN, 
-			idpairv* in_pAttrCounts, double in_b, double in_H, double muIn, int *attrIdsIn, int sIn, int* numUsedIn, int* compNIn, double varianceIn):
+			idpairv* in_pAttrCounts, double in_b, double in_H, double muIn, int *attrIdsIn, int sIn, int* numUsedIn, double* compNIn, double varianceIn):
 	curNH(in_curNH), pNodes(in_pNodes), pNodesCond(in_pNodesCond), pToDoN(in_pToDoN), 
 	pAttrCounts(in_pAttrCounts), b(in_b), H(in_H), mu(muIn), attrIds(attrIdsIn), s(sIn), numUsed(numUsedIn), compN(compNIn), variance(varianceIn) {}
 
@@ -80,7 +80,7 @@ struct JobData
 	int *attrIds;
 	int s;
 	int *numUsed;
-	int *compN;
+	double *compN;
 	double variance;
 	idpairv* pAttrCounts;
 	double b;

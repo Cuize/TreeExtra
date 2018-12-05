@@ -200,7 +200,7 @@ void CTreeNode::traverse(int itemNo, double inCoef, double& lOutCoef, double& rO
 // Returns true if succeeds, false if this node becomes a leaf
 // input: alpha - min possible ratio of internal node train subset volume to the whole train set size, 
 //		when surpassed,	the node becomes a leaf
-bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, int *attrIds, int s, int* numUsed, int* compN)
+bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, int *attrIds, int s, int* numUsed, double* compN)
 {	
 //1. check basic leaf conditions
 	double nodeV, nodeSum, squares, realNodeV;
@@ -439,13 +439,13 @@ void CTreeNode::makeLeaf(double nodeMean)
 	// nodeSum - sum of response values in the training subset
 //out: true, if best split found. false, if there were no splits
 
-bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int *numUsed, int *compN)
+bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int *numUsed, double *compN)
 {
 	double bestEval = QNAN; //current value for the best evaluation
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
 
 	int numBool = 0;
-	cout<<"pSortedValSize: "<<(*pSorted)[0].size()<<endl;
+	
 
 	
 
@@ -594,9 +594,8 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 	cout<<"# of active features: "<<pAttrs->size()<<endl;
 	cout<<"# of active bool features: "<<numBool<<endl;
 	cout<<"# of sample: "<<nodeV<<endl;
-	cout<<"# of sample: "<<pItemSet->size()<<endl;
-	cout<<"approximate computation: "<< (int)pAttrs->size() * (int)pItemSet->size()<<endl;
-	*compN += (int)pAttrs->size() * (int)pItemSet->size(); 
+	cout<<"approximate computation: "<< pAttrs->size() * pItemSet->size()<<endl;
+	*compN += (pAttrs->size() * pItemSet->size())/pData->getTrainN(); 
 	
 
 
@@ -838,7 +837,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 	// nodeSum - sum of response values in the training subset
 //out: true, if best split found. false, if there were no splits
 
-bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int s, int *numUsed, int *compN)
+bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int s, int *numUsed, double *compN)
 {	
 
 	double bestEval = QNAN; //current value for the best evaluation
@@ -899,7 +898,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		}
 		sort(Ptmp1->begin(), Ptmp1->end());
 		sort(Ptmp2->begin(), Ptmp2->end());
-		*compN += sampleN + sampleN * (int)max(1.0,log(sampleN));
+		*compN += (sampleN + sampleN * max(1.0,log(sampleN)))/pData->getTrainN();
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
@@ -955,7 +954,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 }
 
 
-bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, dipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu, int* compN)
+bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, dipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu, double* compN)
 {
 
 	
@@ -1087,7 +1086,7 @@ bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, 
 				prevAttrVal = curAttrVal;
 			}//end while(pairIt != pSortedVals->end())				
 	}//end if continuous
-*compN += (int)pSortedVals->size();
+*compN += pSortedVals->size()/pData->getTrainN();
 
 return newSplits; 
 }
