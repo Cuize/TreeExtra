@@ -58,7 +58,7 @@ private:
 	int *attrIds;        //used features
 	int s;				//expected number of active features
 	int *numUsed;		//used number of features 
-	int *compN;
+	double *compN;
 	double variance;      // variance (sum of square error) of the root
 };
 
