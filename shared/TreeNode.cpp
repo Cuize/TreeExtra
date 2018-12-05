@@ -445,6 +445,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 	SplitInfov bestSplits; // all splits that have best (identical) evaluation
 
 	int numBool = 0;
+	cout<<"pSortedValSize: "<<(*pSorted)[0].size()<<endl;
 
 	
 
@@ -455,7 +456,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 		if(pData->boolAttr(attr))	
 		{//boolean attribute
 			//there is exactly one split for a boolean attribute, evaluate it
-			numBool += 1
+			numBool += 1;
 
 			SplitInfo boolSplit(attr, 0.5);
 			double eval = evalBool(boolSplit, nodeV, nodeSum, squares, rootVar) + penalty;
@@ -593,10 +594,9 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 	cout<<"# of active features: "<<pAttrs->size()<<endl;
 	cout<<"# of active bool features: "<<numBool<<endl;
 	cout<<"# of sample: "<<nodeV<<endl;
-	cout<<"# of sample: "<<pSortedVals->size()<<endl;
 	cout<<"# of sample: "<<pItemSet->size()<<endl;
-	cout<<"approximate computation: "<< (int)pAttrs->size() * (int)pSortedVals->size();
-	*compN += (int)pAttrs->size() * (int)pSortedVals->size(); 
+	cout<<"approximate computation: "<< (int)pAttrs->size() * (int)pItemSet->size();
+	*compN += (int)pAttrs->size() * (int)pItemSet->size(); 
 	
 
 
@@ -853,7 +853,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 			dipairv* pSortedVals = &(*pSorted)[attrNo];  // pointer to sorted value and index
 
-			bool newSplits = singleSplit(bestSplits, bestEval, attr, pSortedVals, nodeV, nodeSum, squares, rootVar, compN); //update  bestSplits, bestEval								
+			bool newSplits = singleSplit(bestSplits, bestEval, attr, pSortedVals, nodeV, nodeSum, squares, rootVar, 0, compN); //update  bestSplits, bestEval								
 			//if an attribute is exhausted, delete it, shift to next iteration
 			if(!newSplits)
 			{
@@ -928,7 +928,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 
 	}
-	
+
 
 	
 
