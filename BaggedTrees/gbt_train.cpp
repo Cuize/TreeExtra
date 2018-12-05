@@ -153,7 +153,11 @@ int main(int argc, char* argv[])
 	int attrIds[attrN];       
 	fill_n(attrIds, attrN, 0); // initialize all attrIds 0:notused 1:used
 	int num = 0;
+	int num1 = 0;
+
 	int* numUsed = &num; // number of used features
+	int* compN = &num1; // number of approximate operations for training the model
+
 	if(topAttrN == -1)
 		topAttrN = attrN;
 	idpairv attrCounts;	//counts of attribute importance
@@ -202,7 +206,7 @@ int main(int argc, char* argv[])
 		else
 			data.newSample(sampleN);
 
-		CTree tree(ti.alpha,ti.mu,attrIds,ti.s,numUsed);
+		CTree tree(ti.alpha,ti.mu,attrIds,ti.s,numUsed,compN);
 		tree.setRoot();
 		tree.resetRoot(trainPreds);
 		idpairv stub;
@@ -228,6 +232,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
+	cout<<"total approximate computation: "<< (*compN) <<endl;
 
 	int usedAttrN=0;  // number of used features
 	for(int i=0;i<attrN;i++){
