@@ -5,4 +5,4 @@ This is a development version of the TreeExtra package. You can download the lat
 You can find detailed manuals, early releases, related research papers and talks on http://additivegroves.net. 
 
 TreeExtra is maintained for both Windows and Linux platforms. There is no support for OS X/macOS systems at this time.
-GBFS_GroupTest: increase speed when only a few variable matters; try combine the optimized implementation in TreeExtra
+GBFS_GroupTest: increase speed when only a few variable matters; try combine the optimized implementation in TreeExtra; try to avoid multiple sorting
