@@ -595,7 +595,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 	cout<<"# of active bool features: "<<numBool<<endl;
 	cout<<"# of sample: "<<nodeV<<endl;
 	cout<<"approximate computation: "<< pAttrs->size() * pItemSet->size()<<endl;
-	*compN += (pAttrs->size() * pItemSet->size())/pData->getTrainN(); 
+	*compN += (double)(pAttrs->size() * pItemSet->size())/(double)pData->getTrainN(); 
 	
 
 
@@ -898,7 +898,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		}
 		sort(Ptmp1->begin(), Ptmp1->end());
 		sort(Ptmp2->begin(), Ptmp2->end());
-		*compN += (sampleN + sampleN * max(1.0,log(sampleN)))/pData->getTrainN();
+		*compN += (double)(sampleN + sampleN * max(1.0,log(sampleN)))/(double)pData->getTrainN();
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
@@ -1086,7 +1086,7 @@ bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, 
 				prevAttrVal = curAttrVal;
 			}//end while(pairIt != pSortedVals->end())				
 	}//end if continuous
-*compN += pSortedVals->size()/pData->getTrainN();
+*compN += (double)pSortedVals->size()/(double)pData->getTrainN();
 
 return newSplits; 
 }

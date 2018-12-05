@@ -206,6 +206,8 @@ int main(int argc, char* argv[])
 		else
 			data.newSample(sampleN);
 
+		cout<<"# active features: "<< (*numUsed) <<endl;
+
 		CTree tree(ti.alpha,ti.mu,attrIds,ti.s,numUsed,compN);
 		tree.setRoot();
 		tree.resetRoot(trainPreds);
