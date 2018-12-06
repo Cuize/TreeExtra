@@ -597,7 +597,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 	// cout<<"# of active bool features: "<<numBool<<endl;
 	// cout<<"# of sample: "<<nodeV<<endl;
 	// cout<<"approximate computation: "<< pAttrs->size() * pItemSet->size()<<endl;
-	// *compN += (double)(pAttrs->size() * pItemSet->size())/(double)pData->getTrainN(); 
+	*compN += (double)(pAttrs->size() * pItemSet->size())/(double)pData->getTrainN(); 
 	
 
 
