@@ -289,7 +289,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 
 	//create sorted vectors in child nodes
 	// if(!trigger)
-	{
+	// {
 
 		int defAttrN = (int)pAttrs->size();
 		left->pSorted = new dipairvv(defAttrN);
@@ -327,6 +327,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	pAttrs = NULL;
 
 	return true;
+// }
 }
 
 
