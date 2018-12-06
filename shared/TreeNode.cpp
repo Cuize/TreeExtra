@@ -221,7 +221,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int d0 = pAttrs->size();
 	double comp1 = d0;
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
-	bool trigger = ( remain == 1 ) && ( 2 * comp2 < comp1 );
+	bool trigger = (( remain == 1 ) && (  comp2 < comp1 )) || (pSorted == NULL);
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
@@ -288,26 +288,30 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	}//end for(int itemNo = 0; itemNo < itemN; itemNo++)
 
 	//create sorted vectors in child nodes
-	int defAttrN = (int)pAttrs->size();
-	left->pSorted = new dipairvv(defAttrN);
-	right->pSorted = new dipairvv(defAttrN);
-	
-	for(int attrNo = 0; attrNo < defAttrN; attrNo++)
+	if(!trigger)
 	{
-		//reserve space 
-		(*left->pSorted)[attrNo].reserve((int)left->pItemSet->size());
-		(*right->pSorted)[attrNo].reserve((int)right->pItemSet->size());
+
+		int defAttrN = (int)pAttrs->size();
+		left->pSorted = new dipairvv(defAttrN);
+		right->pSorted = new dipairvv(defAttrN);
 		
-		//insert pairs in childrens sorted vectors in the same order, update item # through hash
-		for(dipairv::iterator pvIt = (*pSorted)[attrNo].begin();
-			pvIt!=(*pSorted)[attrNo].end(); pvIt++)
+		for(int attrNo = 0; attrNo < defAttrN; attrNo++)
 		{
-			int leftNo = leftHash[pvIt->second];
-			int rightNo = rightHash[pvIt->second];
-			if(leftNo != -1)
-				(*left->pSorted)[attrNo].push_back(dipair(pvIt->first, leftNo));
-			if(rightNo != -1)
-				(*right->pSorted)[attrNo].push_back(dipair(pvIt->first, rightNo));
+			//reserve space 
+			(*left->pSorted)[attrNo].reserve((int)left->pItemSet->size());
+			(*right->pSorted)[attrNo].reserve((int)right->pItemSet->size());
+			
+			//insert pairs in childrens sorted vectors in the same order, update item # through hash
+			for(dipairv::iterator pvIt = (*pSorted)[attrNo].begin();
+				pvIt!=(*pSorted)[attrNo].end(); pvIt++)
+			{
+				int leftNo = leftHash[pvIt->second];
+				int rightNo = rightHash[pvIt->second];
+				if(leftNo != -1)
+					(*left->pSorted)[attrNo].push_back(dipair(pvIt->first, leftNo));
+				if(rightNo != -1)
+					(*right->pSorted)[attrNo].push_back(dipair(pvIt->first, rightNo));
+			}
 		}
 	}
 	//clean the parent node
