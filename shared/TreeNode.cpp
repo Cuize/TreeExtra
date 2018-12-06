@@ -219,7 +219,9 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int n = (int)pItemSet->size();
 	int d = pData->getAttrN();
 	int d0 = pAttrs->size();
-	bool trigger = ( remain == 1 ) && (n > 10*d) && (3*d0 > d);
+	double comp1 = d0;
+	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
+	bool trigger = ( remain == 1 ) && ( 2 * comp2 < comp1 );
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
@@ -591,11 +593,11 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 				attrNo++;
 		}//end		if(pData->boolAttr(attr)) else //continuous attribute
 	}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
-	cout<<"# of active features: "<<pAttrs->size()<<endl;
-	cout<<"# of active bool features: "<<numBool<<endl;
-	cout<<"# of sample: "<<nodeV<<endl;
-	cout<<"approximate computation: "<< pAttrs->size() * pItemSet->size()<<endl;
-	*compN += (double)(pAttrs->size() * pItemSet->size())/(double)pData->getTrainN(); 
+	// cout<<"# of active features: "<<pAttrs->size()<<endl;
+	// cout<<"# of active bool features: "<<numBool<<endl;
+	// cout<<"# of sample: "<<nodeV<<endl;
+	// cout<<"approximate computation: "<< pAttrs->size() * pItemSet->size()<<endl;
+	// *compN += (double)(pAttrs->size() * pItemSet->size())/(double)pData->getTrainN(); 
 	
 
 
