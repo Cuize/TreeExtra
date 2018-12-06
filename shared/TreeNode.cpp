@@ -221,7 +221,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int d0 = pAttrs->size();
 	double comp1 = d0;
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
-	bool trigger = (( remain == 1 ) && (  comp2 < comp1 )) || (pSorted == NULL);
+	bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
@@ -288,7 +288,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	}//end for(int itemNo = 0; itemNo < itemN; itemNo++)
 
 	//create sorted vectors in child nodes
-	if(!trigger)
+	// if(!trigger)
 	{
 
 		int defAttrN = (int)pAttrs->size();
@@ -313,7 +313,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 					(*right->pSorted)[attrNo].push_back(dipair(pvIt->first, rightNo));
 			}
 		}
-	}
+	// }
 	//clean the parent node
 	delete pItemSet;
 	pItemSet = NULL;
