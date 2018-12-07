@@ -221,7 +221,8 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int d0 = pAttrs->size();
 	double comp1 = d0;
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
-	bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
+	// bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
+	bool trigger = (remain == 1);
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
@@ -870,7 +871,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
 	}
 
-// Do groupTest among unusedIds
+// Do groupTest 
 	
 	int sampleN = (int)pItemSet->size();
 	// cout << "sampleN: " << sampleN << endl;
@@ -883,7 +884,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	// binary search
 
 	int st = 0;
-	int ed = pData->getAttrN() - 1;
+	int ed = (pData->activeAttrs).size() - 1;
 	while(st<ed)
 	{
 		int m = (st+ed)/2;
@@ -909,13 +910,13 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
-		if( (st==m) && pData->isActive(m) )
-		{
-			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
+		if(st==m)  // ( (st==m) && pData->isActive(m) )
+		{	int attr = (pData->activeAttrs)[m];
+			split1 = singleSplit(bestSplits, bestEval, attr, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
 			//debug
 			cout<<"st: "<<st<<endl;
 			cout<<"m: "<<m<<endl;
-			cout<<"attrame: "<<pData->getAttrName(m)<<endl;
+			cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
 			cout<<"active"<<endl;
 
 		}
@@ -925,8 +926,8 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 			cout<<"st: "<<st<<endl;
 			cout<<"m: "<<m<<endl;
 			if(st==m)
-			{
-				cout<<"attrame: "<<pData->getAttrName(m)<<endl;
+			{	int attr = (pData->activeAttrs)[m];
+				cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
 				cout<<"NotActive"<<endl;
 			}
 
@@ -935,20 +936,22 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 			}
 
-		if( (ed==m+1) && pData->isActive(m+1) )
-		{
-			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
+		if(ed==m+1) //(ed==m+1) && pData->isActive(m+1)
+		{	
+			int attr = (pData->activeAttrs)[m+1];
+			split2 = singleSplit(bestSplits, bestEval, attr, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
 			cout<<"ed: "<<st<<endl;
 			cout<<"m+1: "<<m+1<<endl;
-			cout<<"attrame: "<<pData->getAttrName(m+1)<<endl;
+			cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
 			cout<<"active"<<endl;
 		}
 		else
 		{
 			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //do not update  bestSplits, bestEval
 			if(ed==m+1)
-			{
-				cout<<"attrame: "<<pData->getAttrName(m+1)<<endl;
+			{	
+				int attr = (pData->activeAttrs)[m+1];
+				cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
 				cout<<"NotActive"<<endl;
 			}
 
