@@ -223,7 +223,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
 	// bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
 	// bool trigger = (remain == 1);
-	bool trigger = (( remain == 1 ) || ( (int)pSorted->size() == *numUsed))
+	bool trigger = (( remain == 1 ) || ( (int)pSorted->size() == *numUsed));
 
 
 	// cout<< "group: " << group << endl;
