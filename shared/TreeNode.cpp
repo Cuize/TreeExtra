@@ -222,7 +222,9 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	double comp1 = d0;
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
 	// bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
-	bool trigger = (remain == 1);
+	// bool trigger = (remain == 1);
+	bool trigger = (( remain == 1 ) || ( (int)pSorted->size() == *numUsed))
+
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
@@ -481,6 +483,9 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 					bestSplits.clear();
 				}
 				if(eval == bestEval)
+					cout << "attrName: "<<pData->getAttrName(attr)<<endl;
+					cout << "eval: "<<eval<<endl;
+
 					bestSplits.push_back(SplitInfo(boolSplit));
 
 				attrNo++;
@@ -568,6 +573,8 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 					}
 					if(eval == bestEval)
 					{
+						cout << "attrName: "<<pData->getAttrName(attr)<<endl;
+						cout << "eval: "<<eval<<endl;
 						//create actual split with the split point halfway between attr values
 						SplitInfo goodSplit(attr, (curAttrVal + prevAttrVal) / 2, leftRatio);
 						bestSplits.push_back(goodSplit);
