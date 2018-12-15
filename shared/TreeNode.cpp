@@ -946,7 +946,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		if( (ed==m+1) && pData->isActive(m+1) )
 		{	
 			
-			split2 = singleSplit(bestSplits, bestEval, attr, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
+			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
 			// cout<<"ed: "<<st<<endl;
 			// cout<<"m+1: "<<m+1<<endl;
 			// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
