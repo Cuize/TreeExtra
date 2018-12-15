@@ -137,7 +137,7 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		hasMV = false;
 		hasActiveMV = false;
 		intv mvCounts(activeAttrN);
-		// intv activeAttrs;
+		intv activeAttrs;
 		getActiveAttrs(activeAttrs);
 
 		getLineExt(fin, buf);
@@ -204,17 +204,18 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 
-		// standardize the train set for groupSplit (only for activeAttrs)
-		for(int j = 0; j < activeAttrN; j++){
-			double ma = train[0][activeAttrs[j]];
-			double mi = train[0][activeAttrs[j]];
+		// standardize the train set for groupSplit
+		int cols = (train[0]).size(); 
+		for(int j = 0; j < cols; j++){
+			double ma = train[0][j];
+			double mi = train[0][j];
 			for(int i = 1; i < caseNo; i++){
-				ma = max(ma,train[i][activeAttrs[j]]);
-				mi = min(mi,train[i][activeAttrs[j]]);
+				ma = max(ma,train[i][j]);
+				mi = min(mi,train[i][j]);
 			}
 			if(ma > mi){
 				for(int i = 0; i < caseNo; i++)
-					train[i][activeAttrs[j]] = (train[i][activeAttrs[j]] - mi)/(ma - mi);
+					train[i][j] = (train[i][j] - mi)/(ma - mi);
 			}
 		}
 
@@ -222,14 +223,14 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		// cout << "attrN: " << attrN << endl;
 		// cout << "trainColNumber:  " << train[0].size()<<endl;  
 
-		prefixedSum.resize(activeAttrN);
+		prefixedSum.resize(attrN);
 		doublev cur(trainN);
-		for(int attrNo = 0; attrNo < activeAttrN; attrNo++)
+		for(int attrNo = 0; attrNo < attrN; attrNo++)
 		{	
 			for (int j = 0; j < trainN; j++)
 			{
-				if(!isnan(train[j][activeAttrs[attrNo]]))
-					cur[j] += train[j][activeAttrs[attrNo]];
+				if(!isnan(train[j][attrNo]))
+					cur[j] += train[j][attrNo];
 			}
 			prefixedSum[attrNo]=cur;
 

@@ -229,7 +229,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
 	// cout << "n: "<< n << endl;
-	cout << "triggered :" << trigger << endl;
+	// cout << "triggered :" << trigger << endl;
 
 	bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (!trigger) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed, compN) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed, compN) ) );	//finds and sets best split
 
@@ -483,8 +483,8 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 					bestSplits.clear();
 				}
 				if(eval == bestEval)
-					cout << "attrName: "<<pData->getAttrName(attr)<<endl;
-					cout << "eval: "<<eval<<endl;
+					// cout << "attrName: "<<pData->getAttrName(attr)<<endl;
+					// cout << "eval: "<<eval<<endl;
 
 					bestSplits.push_back(SplitInfo(boolSplit));
 
@@ -573,8 +573,8 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 					}
 					if(eval == bestEval)
 					{
-						cout << "attrName: "<<pData->getAttrName(attr)<<endl;
-						cout << "eval: "<<eval<<endl;
+						// cout << "attrName: "<<pData->getAttrName(attr)<<endl;
+						// cout << "eval: "<<eval<<endl;
 						//create actual split with the split point halfway between attr values
 						SplitInfo goodSplit(attr, (curAttrVal + prevAttrVal) / 2, leftRatio);
 						bestSplits.push_back(goodSplit);
@@ -891,7 +891,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	// binary search
 
 	int st = 0;
-	int ed = (pData->activeAttrs).size() - 1;
+	int ed = pData->getAttrN() - 1;
 	while(st<ed)
 	{
 		int m = (st+ed)/2;
@@ -917,55 +917,55 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
-		if(st==m)  // ( (st==m) && pData->isActive(m) )
-		{	int attr = (pData->activeAttrs)[m];
-			split1 = singleSplit(bestSplits, bestEval, attr, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
+		if( (st==m) && pData->isActive(m) )
+		{	
+			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
 			//debug
-			cout<<"st: "<<st<<endl;
-			cout<<"m: "<<m<<endl;
-			cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-			cout<<"active"<<endl;
+			// cout<<"st: "<<st<<endl;
+			// cout<<"m: "<<m<<endl;
+			// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+			// cout<<"active"<<endl;
 
 		}
 		else
 			{
 			split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //do not update  bestSplits, bestEval
-			cout<<"st: "<<st<<endl;
-			cout<<"m: "<<m<<endl;
-			if(st==m)
-			{	int attr = (pData->activeAttrs)[m];
-				cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-				cout<<"NotActive"<<endl;
-			}
+			// cout<<"st: "<<st<<endl;
+			// cout<<"m: "<<m<<endl;
+			// if(st==m)
+			// {	int attr = (pData->activeAttrs)[m];
+			// 	cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+			// 	cout<<"NotActive"<<endl;
+			// }
 
 	
 
 
-			}
+			// }
 
-		if(ed==m+1) //(ed==m+1) && pData->isActive(m+1)
+		if( (ed==m+1) && pData->isActive(m+1) )
 		{	
-			int attr = (pData->activeAttrs)[m+1];
+			
 			split2 = singleSplit(bestSplits, bestEval, attr, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
-			cout<<"ed: "<<st<<endl;
-			cout<<"m+1: "<<m+1<<endl;
-			cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-			cout<<"active"<<endl;
+			// cout<<"ed: "<<st<<endl;
+			// cout<<"m+1: "<<m+1<<endl;
+			// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+			// cout<<"active"<<endl;
 		}
 		else
 		{
 			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //do not update  bestSplits, bestEval
-			if(ed==m+1)
-			{	
-				int attr = (pData->activeAttrs)[m+1];
-				cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-				cout<<"NotActive"<<endl;
-			}
+		// 	if(ed==m+1)
+		// 	{	
+		// 		int attr = (pData->activeAttrs)[m+1];
+		// 		cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+		// 		cout<<"NotActive"<<endl;
+		// 	}
 
-		}
+		// }
 
-		 cout << "splitval1: " << groupSplitVal1 << " splitval2: " << groupSplitVal2 << endl;
-		 cout << "split1: " << split1 << " split2: " << split2 << endl;
+		//  cout << "splitval1: " << groupSplitVal1 << " splitval2: " << groupSplitVal2 << endl;
+		//  cout << "split1: " << split1 << " split2: " << split2 << endl;
 
 		if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
 			ed = m;

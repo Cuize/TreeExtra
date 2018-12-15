@@ -11,8 +11,6 @@ public:
 	//loads data into memory
 	INDdata(const char* trainFName, const char* valFName, const char* testFName, 
 			const char* attrFName, bool doOut = true);
-
-	intv activeAttrs;  	 // activeAttr Id, match prefixedSum rowId
 	
 //private members get functions  
 	int getAttrN(){return attrN;}	
