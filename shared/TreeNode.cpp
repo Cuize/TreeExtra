@@ -941,7 +941,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	
 
 
-			// }
+			}
 
 		if( (ed==m+1) && pData->isActive(m+1) )
 		{	
@@ -962,7 +962,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		// 		cout<<"NotActive"<<endl;
 		// 	}
 
-		// }
+		 }
 
 		//  cout << "splitval1: " << groupSplitVal1 << " splitval2: " << groupSplitVal2 << endl;
 		//  cout << "split1: " << split1 << " split2: " << split2 << endl;
