@@ -221,7 +221,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	int d0 = pAttrs->size();
 	double comp1 = d0;
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
-	bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
+	bool trigger = ( remain == 1 );
 
 	// cout<< "group: " << group << endl;
 	// cout<< "d: " << d << endl;
