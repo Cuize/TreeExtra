@@ -291,8 +291,8 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	}//end for(int itemNo = 0; itemNo < itemN; itemNo++)
 
 	//create sorted vectors in child nodes
-	// if(!trigger)
-	// {
+	 if(!trigger)
+	 {
 
 		int defAttrN = (int)pAttrs->size();
 		left->pSorted = new dipairvv(defAttrN);
@@ -316,7 +316,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 					(*right->pSorted)[attrNo].push_back(dipair(pvIt->first, rightNo));
 			}
 		}
-	// }
+	 }
 	//clean the parent node
 	delete pItemSet;
 	pItemSet = NULL;
@@ -864,10 +864,25 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		// double penalty = (1 - attrIds[attr])*mu; // 0<=mu<1 penalty
 		if(attrIds[attr]==1)
 		{					//used feature
+			int sampleN = (int)pItemSet->size();
+			dipairv tmp(sampleN);
+			dipairv* Ptmp = &tmp;  // pointer to sorted value and index
+			for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
+			{
+			int caseNo = (*pItemSet)[sampleNo].key;
+			double value = pData->getRangeSum(caseNo, attr, attr);
+			// cout << "caseNo: " << caseNo << endl;
+			// cout << "value1: " << value1 << endl;
+			// cout << "value2: " << value2 << endl;
+			(*Ptmp)[sampleNo] = dipair(value, sampleNo);
+			}
+			sort(Ptmp->begin(), Ptmp->end());
 
-			dipairv* pSortedVals = &(*pSorted)[attrNo];  // pointer to sorted value and index
 
-			bool newSplits = singleSplit(bestSplits, bestEval, attr, pSortedVals, nodeV, nodeSum, squares, rootVar, 0, compN); //update  bestSplits, bestEval								
+
+		
+
+			bool newSplits = singleSplit(bestSplits, bestEval, attr, Ptmp, nodeV, nodeSum, squares, rootVar, 0, compN); //update  bestSplits, bestEval								
 			//if an attribute is exhausted, delete it, shift to next iteration
 			if(!newSplits)
 			{
