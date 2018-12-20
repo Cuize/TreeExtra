@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <errno.h>
+#include <ctime>
 
 int main(int argc, char* argv[])
 {	
@@ -181,6 +182,11 @@ int main(int argc, char* argv[])
 		froccurve.close();
 	}
 
+	 fstream frootvar("root_var.txt", ios_base::out); // root variance
+ 	frootvar.close();
+ 	fstream ftime("time.txt", ios_base::out); // root variance
+ 	ftime.close();
+
 	doublev validTar;
 	int validN = data.getTargets(validTar, VALID);
 
@@ -225,6 +231,14 @@ int main(int argc, char* argv[])
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
 		frmscurve << rmse(validPreds, validTar) << endl;
 		frmscurve.close();
+
+		frootvar.open("root_var.txt", ios_base::out | ios_base::app); 
+ 		frootvar << tree.getVariance() << endl;
+ 		frootvar.close();
+ 
+  		ftime.open("time.txt", ios_base::out | ios_base::app); 
+ 		ftime << clock() << endl;
+ 		ftime.close();
 		
 		if(!ti.rms)
 		{
