@@ -169,10 +169,10 @@ void CTreeNode::resetRoot(doublev& othpreds)
 		sums += itemIt->response;
 		square += (itemIt->response)*(itemIt->response);
 	}
-	cout<<"count: "<<count<<endl;
+	// cout<<"count: "<<count<<endl;
 
 	variance = square - sums*sums/count;
-	cout<<"variance: "<<variance<<endl;
+	// cout<<"variance: "<<variance<<endl;
 }
 
 //This function is used for prediction. It passes the case from the parent to child node(s).
@@ -198,7 +198,7 @@ void CTreeNode::traverse(int itemNo, double inCoef, double& lOutCoef, double& rO
 // Returns true if succeeds, false if this node becomes a leaf
 // input: alpha - min possible ratio of internal node train subset volume to the whole train set size, 
 //		when surpassed,	the node becomes a leaf
-bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, int *attrIds, int s, int* numUsed, double* compN)
+bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu, int *attrIds, int s, int* numUsed)
 {	
 //1. check basic leaf conditions
 	double nodeV, nodeSum, squares, realNodeV;
@@ -231,7 +231,7 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	// cout << "triggered :" << trigger << endl;
 
 	// bool notFound = ( pData->useCoef() ? setSplitMV(nodeV, nodeSum, squares, rootVar, mu, attrIds) : ( (!trigger) ? setSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, numUsed, compN) : setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed, compN) ) );	//finds and sets best split
-	bool notFound = setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed, compN);
+	bool notFound = setGroupSplit(nodeV, nodeSum, squares, rootVar, mu, attrIds, s, numUsed);
 	if(notFound)
 	{//no splittings or they disappeared because of tiny coefficients. This node becomes a leaf
 		makeLeaf(nodeSum / nodeV);
@@ -851,7 +851,7 @@ void CTreeNode::makeLeaf(double nodeMean)
 	// nodeSum - sum of response values in the training subset
 //out: true, if best split found. false, if there were no splits
 
-bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int s, int *numUsed, double *compN)
+bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, double rootVar, double mu, int *attrIds, int s, int *numUsed)
 {	
 
 	double bestEval = QNAN; //current value for the best evaluation
@@ -881,7 +881,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 		
 
-			bool newSplits = singleSplit(bestSplits, bestEval, attr, Ptmp, nodeV, nodeSum, squares, rootVar, 0, compN); //update  bestSplits, bestEval								
+			bool newSplits = singleSplit(bestSplits, bestEval, attr, Ptmp, nodeV, nodeSum, squares, rootVar, 0); //update  bestSplits, bestEval								
 			//if an attribute is exhausted, delete it, shift to next iteration
 			if(!newSplits)
 			{
@@ -927,13 +927,13 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		}
 		sort(Ptmp1->begin(), Ptmp1->end());
 		sort(Ptmp2->begin(), Ptmp2->end());
-		*compN += (double)(sampleN + sampleN * max(1.0,log(sampleN)))/(double)pData->getTrainN();
+		// *compN += (double)(sampleN + sampleN * max(1.0,log(sampleN)))/(double)pData->getTrainN();
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
 		if( (st==m) && pData->isActive(m) )
 		{	
-			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
+			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 			//debug
 			// cout<<"st: "<<st<<endl;
 			// cout<<"m: "<<m<<endl;
@@ -943,7 +943,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		}
 		else
 			{
-			split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu, compN); //do not update  bestSplits, bestEval
+			split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 			// cout<<"st: "<<st<<endl;
 			// cout<<"m: "<<m<<endl;
 			// if(st==m)
@@ -960,7 +960,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		if( (ed==m+1) && pData->isActive(m+1) )
 		{	
 			
-			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //update  bestSplits, bestEval
+			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 			// cout<<"ed: "<<st<<endl;
 			// cout<<"m+1: "<<m+1<<endl;
 			// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
@@ -968,7 +968,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		}
 		else
 		{
-			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu, compN); //do not update  bestSplits, bestEval
+			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
 		// 	if(ed==m+1)
 		// 	{	
 		// 		int attr = (pData->activeAttrs)[m+1];
@@ -1015,7 +1015,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 }
 
 
-bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, dipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu, double* compN)
+bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, dipairv* pSortedVals, double nodeV, double nodeSum, double squares, double rootVar, double mu)
 {
 
 	
@@ -1147,7 +1147,7 @@ bool CTreeNode::singleSplit(SplitInfov& bestSplits, double& bestEval, int attr, 
 				prevAttrVal = curAttrVal;
 			}//end while(pairIt != pSortedVals->end())				
 	}//end if continuous
-*compN += (double)pSortedVals->size()/(double)pData->getTrainN();
+// *compN += (double)pSortedVals->size()/(double)pData->getTrainN();
 
 return newSplits; 
 }

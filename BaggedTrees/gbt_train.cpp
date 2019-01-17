@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
 	double num1 = 0;
 
 	int* numUsed = &num; // number of used features
-	double* compN = &num1; // number of approximate operations for training the model
+	// double* compN = &num1; // number of approximate operations for training the model
 
 	if(topAttrN == -1)
 		topAttrN = attrN;
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 
 		cout<<"# active features: "<< (*numUsed) <<endl;
 
-		CTree tree(ti.alpha,ti.mu,attrIds,ti.s,numUsed,compN);
+		CTree tree(ti.alpha,ti.mu,attrIds,ti.s,numUsed);
 		tree.setRoot();
 		tree.resetRoot(trainPreds);
 		idpairv stub;
@@ -228,8 +228,8 @@ int main(int argc, char* argv[])
 			validPreds[itemNo] += shrinkage * tree.predict(itemNo, VALID);
 
 		//output
-		cout<<"validPredsSize: "<<validPreds.size()<<endl;
-		cout<<"validPredsFirst: "<<validPreds[0]<<endl;
+		// cout<<"validPredsSize: "<<validPreds.size()<<endl;
+		// cout<<"validPredsFirst: "<<validPreds[0]<<endl;
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
 		frmscurve << rmse(validPreds, validTar) << endl;
 
@@ -251,7 +251,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	cout<<"total approximate computation: "<< (*compN) <<endl;
+	// cout<<"total approximate computation: "<< (*compN) <<endl;
 
 	int usedAttrN=0;  // number of used features
 	for(int i=0;i<attrN;i++){
