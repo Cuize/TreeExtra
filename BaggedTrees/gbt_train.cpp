@@ -228,8 +228,10 @@ int main(int argc, char* argv[])
 			validPreds[itemNo] += shrinkage * tree.predict(itemNo, VALID);
 
 		//output
+		cout<<"validPredsSize: "<<validPreds.size()<<endl;
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
 		frmscurve << rmse(validPreds, validTar) << endl;
+
 		frmscurve.close();
 
 		frootvar.open("root_var.txt", ios_base::out | ios_base::app); 
