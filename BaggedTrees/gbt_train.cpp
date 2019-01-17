@@ -229,6 +229,7 @@ int main(int argc, char* argv[])
 
 		//output
 		cout<<"validPredsSize: "<<validPreds.size()<<endl;
+		cout<<"validPredsFirst: "<<validPreds[0]<<endl;
 		frmscurve.open("boosting_rms.txt", ios_base::out | ios_base::app); 
 		frmscurve << rmse(validPreds, validTar) << endl;
 
