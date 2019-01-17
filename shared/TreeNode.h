@@ -101,7 +101,7 @@ public:
 
 private:
 	ItemInfov*	pItemSet;	//subset of the training set that belongs to the node during training
-	dipairvv*   pSorted;	//current itemset indexes sorted by value of attribute
+	//dipairvv*   pSorted;	//current itemset indexes sorted by value of attribute
 	intv*		pAttrs;		//set of valid attributes in the node	
 	SplitInfo	splitting;	//split (attribute, split point, proportion for missing values)
 	double variance; // variance (sum of square error ) of the node (just for root)

@@ -29,7 +29,7 @@ INDdata* CTreeNode::pData;
 
 //Constructor. If the node is a root, download info about the train set.
 CTreeNode::CTreeNode(): 
-	left(0), right(0), pAttrs(NULL), pSorted(NULL), pItemSet(NULL),variance(0)
+	left(0), right(0), pAttrs(NULL), pItemSet(NULL),variance(0)
 {
 	
 }
@@ -42,8 +42,8 @@ CTreeNode::~CTreeNode()
 		delete pItemSet;
 	if(pAttrs)
 		delete pAttrs;
-	if(pSorted)
-		delete pSorted;
+	// if(pSorted)
+	// 	delete pSorted;
 }
 
 //Deletes a subtree with a root in this node. It is recursive because it calls destructor.
@@ -85,12 +85,12 @@ CTreeNode& CTreeNode::operator=(const CTreeNode& rhs)
 	else
 		pAttrs = NULL;
 	
-	if(pSorted)
-		delete pSorted;
-	if(rhs.pSorted)
-		pSorted = new dipairvv(*rhs.pSorted);
-	else
-		pSorted = NULL;
+	// if(pSorted)
+	// 	delete pSorted;
+	// if(rhs.pSorted)
+	// 	pSorted = new dipairvv(*rhs.pSorted);
+	// else
+	// 	pSorted = NULL;
 
 	//copy pointers to subtrees and dataset class
 	left = rhs.left;		
@@ -117,10 +117,10 @@ CTreeNode::CTreeNode(const CTreeNode& rhs)
 	else
 		pAttrs = NULL;
 	
-	if(rhs.pSorted)
-		pSorted = new dipairvv(*rhs.pSorted);
-	else
-		pSorted = NULL;
+	// if(rhs.pSorted)
+	// 	pSorted = new dipairvv(*rhs.pSorted);
+	// else
+	// 	pSorted = NULL;
 
 	//copy pointers to subtrees and dataset class
 	left = rhs.left;		
@@ -144,9 +144,9 @@ void CTreeNode::setRoot()
 		pAttrs = new intv();
 	pData->getActiveAttrs(*pAttrs);
 
-	if(pSorted == NULL)
-		pSorted = new dipairvv();
-	pData->getSortedData(*pSorted);
+	// if(pSorted == NULL)
+	// 	pSorted = new dipairvv();
+	// pData->getSortedData(*pSorted);
 	
 	if(pItemSet == NULL)
 		pItemSet = new ItemInfov();
@@ -155,11 +155,6 @@ void CTreeNode::setRoot()
 	// if(pPrefixedSum == NULL)
 	// 	pPrefixedSum = new floatvv();
 	// pData->getPrefixedSum(*pPrefixedSum,attrIds);
-
-
-
-
-
 }
 
 //input: predictions for train set data points produced by the rest of the model (not by this tree)	
@@ -222,7 +217,8 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	double comp1 = d0;
 	double comp2 =( 3 + max(1.0,log(n))) * log2(d);
 	// bool trigger = (( remain == 1 ) && (  comp2 < comp1 ));
-	bool trigger = (remain == 1);
+	// bool trigger = (remain == 1);
+	bool trigger = true; 
 	// bool trigger = (( remain == 1 ) || ( (int)pSorted->size() == *numUsed));
 
 
@@ -291,38 +287,38 @@ bool CTreeNode::split(double alpha, double rootVar, double* pEntropy, double mu,
 	}//end for(int itemNo = 0; itemNo < itemN; itemNo++)
 
 	//create sorted vectors in child nodes
-	 if(!trigger)
-	 {
+	 // if(!trigger)
+	 // {
 
-		int defAttrN = (int)pAttrs->size();
-		left->pSorted = new dipairvv(defAttrN);
-		right->pSorted = new dipairvv(defAttrN);
+		// int defAttrN = (int)pAttrs->size();
+		// left->pSorted = new dipairvv(defAttrN);
+		// right->pSorted = new dipairvv(defAttrN);
 		
-		for(int attrNo = 0; attrNo < defAttrN; attrNo++)
-		{
-			//reserve space 
-			(*left->pSorted)[attrNo].reserve((int)left->pItemSet->size());
-			(*right->pSorted)[attrNo].reserve((int)right->pItemSet->size());
+		// for(int attrNo = 0; attrNo < defAttrN; attrNo++)
+		// {
+		// 	//reserve space 
+		// 	(*left->pSorted)[attrNo].reserve((int)left->pItemSet->size());
+		// 	(*right->pSorted)[attrNo].reserve((int)right->pItemSet->size());
 			
-			//insert pairs in childrens sorted vectors in the same order, update item # through hash
-			for(dipairv::iterator pvIt = (*pSorted)[attrNo].begin();
-				pvIt!=(*pSorted)[attrNo].end(); pvIt++)
-			{
-				int leftNo = leftHash[pvIt->second];
-				int rightNo = rightHash[pvIt->second];
-				if(leftNo != -1)
-					(*left->pSorted)[attrNo].push_back(dipair(pvIt->first, leftNo));
-				if(rightNo != -1)
-					(*right->pSorted)[attrNo].push_back(dipair(pvIt->first, rightNo));
-			}
-		}
-	 }
+		// 	//insert pairs in childrens sorted vectors in the same order, update item # through hash
+		// 	for(dipairv::iterator pvIt = (*pSorted)[attrNo].begin();
+		// 		pvIt!=(*pSorted)[attrNo].end(); pvIt++)
+		// 	{
+		// 		int leftNo = leftHash[pvIt->second];
+		// 		int rightNo = rightHash[pvIt->second];
+		// 		if(leftNo != -1)
+		// 			(*left->pSorted)[attrNo].push_back(dipair(pvIt->first, leftNo));
+		// 		if(rightNo != -1)
+		// 			(*right->pSorted)[attrNo].push_back(dipair(pvIt->first, rightNo));
+		// 	}
+		// }
+	 // }
 	//clean the parent node
 	delete pItemSet;
 	pItemSet = NULL;
 
-	delete pSorted;
-	pSorted = NULL;
+	// delete pSorted;
+	// pSorted = NULL;
 
 	//move/init attribute set
 	left->pAttrs = pAttrs;
@@ -427,9 +423,9 @@ void CTreeNode::makeLeaf(double nodeMean)
 		delete pAttrs;
 	pAttrs = NULL;
 
-	if(pSorted)
-		delete pSorted;
-	pSorted = NULL;
+	// if(pSorted)
+	// 	delete pSorted;
+	// pSorted = NULL;
 
 	if(pItemSet)
 		delete pItemSet;
@@ -473,7 +469,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 			if(isnan(eval))
 			{//boolean attribute is not valid anymore, remove it
 				pAttrs->erase(pAttrs->begin() + attrNo);	
-				pSorted->erase(pSorted->begin() + attrNo);
+				// pSorted->erase(pSorted->begin() + attrNo);
 			}
 			else 
 			{//save if this is one of the best splits
@@ -518,7 +514,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 			double curTraV, curTraSum; //for the current block
 			prevTraV = 0; prevTraSum = 0;
 
-			dipairv* pSortedVals = &(*pSorted)[attrNo];
+			// dipairv* pSortedVals = &(*pSorted)[attrNo];
 			dipairv::iterator pairIt = pSortedVals->begin();
 			while(pairIt != pSortedVals->end())
 			{//on each iteration of this cycle collect info about the block of cases with the
@@ -600,7 +596,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 			if(!newSplits)
 			{
 				pAttrs->erase(pAttrs->begin() + attrNo);
-				pSorted->erase(pSorted->begin() + attrNo);
+				// pSorted->erase(pSorted->begin() + attrNo);
 			}
 			else
 				attrNo++;
@@ -623,7 +619,7 @@ bool CTreeNode::setSplit(double nodeV, double nodeSum, double squares, double ro
 		if(pData->boolAttr(splitting.divAttr))
 		{//one can split only once on boolean attribute, remove it from the set of attributes
 			int attrNo = erasev(pAttrs, splitting.divAttr);
-			pSorted->erase(pSorted->begin() + attrNo);	
+			// pSorted->erase(pSorted->begin() + attrNo);	
 				//it is an empty vector (the attribute is boolean), but we still need to remove it
 		}
 		if(attrIds[splitting.divAttr] == 0)
@@ -732,7 +728,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 			double curTraV, curTraSum; //for the current block
 			prevTraV = 0; prevTraSum = 0;
 
-			dipairv* pSortedVals = &(*pSorted)[attrNo];
+			// dipairv* pSortedVals = &(*pSorted)[attrNo];
 			dipairv::iterator pairIt = pSortedVals->begin();
 			while(pairIt != pSortedVals->end())
 			{//on each iteration of this cycle collect info about the block of cases with the
@@ -817,7 +813,7 @@ bool CTreeNode::setSplitMV(double nodeV, double nodeSum, double squares, double 
 		if(!newSplits)
 		{
 			pAttrs->erase(pAttrs->begin() + attrNo);
-			pSorted->erase(pSorted->begin() + attrNo);
+			// pSorted->erase(pSorted->begin() + attrNo);
 		}
 		else
 			attrNo++;
@@ -887,7 +883,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 			if(!newSplits)
 			{
 				pAttrs->erase(pAttrs->begin() + attrNo);
-				pSorted->erase(pSorted->begin() + attrNo);
+				// pSorted->erase(pSorted->begin() + attrNo);
 			}
 		
 		}//end 	for(int attrNo = 0; attrNo < (int)pAttrs->size();)
@@ -1004,7 +1000,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 		if(pData->boolAttr(splitting.divAttr))
 		{//one can split only once on boolean attribute, remove it from the set of attributes
 			int attrNo = erasev(pAttrs, splitting.divAttr);
-			pSorted->erase(pSorted->begin() + attrNo);	
+			// pSorted->erase(pSorted->begin() + attrNo);	
 				//it is an empty vector (the attribute is boolean), but we still need to remove it
 		}
 		if(attrIds[splitting.divAttr] == 0)
@@ -1300,5 +1296,5 @@ void CTreeNode::delAttr(int attrNo)
 {
 	int localNo = -1;
 	erasev(pAttrs, attrNo, localNo);
-	pSorted->erase(pSorted->begin() + localNo);
+	// pSorted->erase(pSorted->begin() + localNo);
 }

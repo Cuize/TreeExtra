@@ -38,7 +38,7 @@ public:
 	int getCurBag(intv& bagData, doublev& bagTar);
 
 	//gets sorted indexes of current training data
-	void getSortedData(dipairvv& sorted);
+	// void getSortedData(dipairvv& sorted);
 
 
 	//for quick implementation of groupTest and binarySearch
@@ -95,14 +95,14 @@ public:
 	void getValues(int attrId, doublev& values);
 
 	//calculates and outputs correlation scores between active attributes based on the training set
-	void correlations(string trainFName);
+	// void correlations(string trainFName);
 
 private:
 	//gets a line of text, returns a vector with data points
 	void readData(char* buf, streamsize buflen, doublev& retv, int retvlen); 
 
 	//create versions of bootstrap data sorted by active continuous attributes 
-	void sortItems(); 
+	// void sortItems(); 
 
 
 private:
@@ -140,7 +140,7 @@ private:
 	intv oobData;		//indexes of out-of-bag data points
 	doublev oobTar;		//targets for out-of-bag data points
 
-	dipairvv sortedItems; //several copies of sorted data points in the bag
+	// dipairvv sortedItems; //several copies of sorted data points in the bag
 							//separate vector for sorting by each attribute
 							//each data point represented as (id, attrvalue) pair
 	doublevv prefixedSum; // for groupTest and binarySearch
