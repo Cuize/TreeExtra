@@ -220,8 +220,9 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		}
 
 		// compute prefixedSum 
-		// cout << "attrN: " << attrN << endl;
-		// cout << "trainColNumber:  " << train[0].size()<<endl;  
+		cout << "attrN: " << attrN << endl;
+		cout << "trainColNumber:  " << train[0].size()<<endl;
+		cout << "colNo: "<< colN<<endl; 
 
 		prefixedSum.resize(attrN);
 		doublev cur(trainN);
