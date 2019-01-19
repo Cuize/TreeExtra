@@ -241,6 +241,8 @@ double CTree::predict(int itemNo, DATA_SET dset)
 	for(int leafNo = 0; leafNo < leafN; leafNo++)
 		ret += leaves[leafNo].first->getResp() * leaves[leafNo].second;
 
+	cout<<"ret: "<<ret<<endl;
+
 	return ret;
 }
 
