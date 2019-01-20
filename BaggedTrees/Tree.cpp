@@ -244,7 +244,7 @@ double CTree::predict(int itemNo, DATA_SET dset)
 		if(!isnan(tmp))
 			ret += tmp;
 		else
-			cout<<"got -nan"
+			cout<<"got -nan"<<endl;
 	}
 
 	// cout<<"ret: "<<ret<<endl;
