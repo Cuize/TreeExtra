@@ -243,7 +243,7 @@ double CTree::predict(int itemNo, DATA_SET dset)
 
 	cout<<"ret: "<<ret<<endl;
 	if(isnan(ret))
-		return 0
+		return 0;
 	return ret;
 }
 
