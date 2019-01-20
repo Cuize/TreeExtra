@@ -237,13 +237,15 @@ double CTree::predict(int itemNo, DATA_SET dset)
 	
 	//calculate aggregated prediction from all leaves
 	double ret = 0; 
+	double tmp;
 	int leafN = (int)leaves.size();
-	for(int leafNo = 0; leafNo < leafN; leafNo++)
-		ret += leaves[leafNo].first->getResp() * leaves[leafNo].second;
+	for(int leafNo = 0; leafNo < leafN; leafNo++){
+		tmp = leaves[leafNo].first->getResp() * leaves[leafNo].second;
+		if(!isnan(tmp))
+			ret += tmp;
+	}
 
-	cout<<"ret: "<<ret<<endl;
-	if(isnan(ret))
-		return 0;
+	// cout<<"ret: "<<ret<<endl;
 	return ret;
 }
 
