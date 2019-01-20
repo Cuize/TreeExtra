@@ -242,7 +242,8 @@ double CTree::predict(int itemNo, DATA_SET dset)
 		ret += leaves[leafNo].first->getResp() * leaves[leafNo].second;
 
 	cout<<"ret: "<<ret<<endl;
-
+	if(isnan(ret)):
+		return 0
 	return ret;
 }
 
