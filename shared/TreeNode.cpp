@@ -931,7 +931,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
-		if( (st==m) && pData->isActive(m) )
+		if( (st==m) && (find(pAttrs->begin(), pAttrs->end(), m) != pAttrs->end()) )
 		{	
 			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
 			//debug
@@ -957,7 +957,7 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 
 			}
 
-		if( (ed==m+1) && pData->isActive(m+1) )
+		if( (ed==m+1) && (find(pAttrs->begin(), pAttrs->end(), m+1) != pAttrs->end()) )
 		{	
 			
 			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
