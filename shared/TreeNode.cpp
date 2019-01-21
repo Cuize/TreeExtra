@@ -906,6 +906,9 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	else
 		m = (int)(2.7 * sn * log(5*sn));
 
+	cout<<"sn: "<<sn<<endl;
+	cout<<"rep: "<<m<<endl;
+
 
 	for(int rep = 0; rep < m; rep++)
 	{
