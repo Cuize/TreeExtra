@@ -247,6 +247,17 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 			rsetToAttrId[i] = idxs;
 		}
 
+		cout<<"sn: "<<sn<<endl;
+		cout<<"m: "<<m<<endl;
+
+		for(int i = 0; i < m; i++){
+			for(int j = 0; j < subSize; j++)
+			{
+				cout<<"prefixedSums[i][j][0]= "<<prefixedSums[i][j][0]<<endl;
+				cout<<"rsetToAttrId[i][j]= "<<rsetToAttrId[i][j]<<endl;
+			}
+		}
+
 
 
 		// cout << "attrN: " << attrN << endl;
