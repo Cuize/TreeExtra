@@ -126,6 +126,8 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		rawIgnore[aIdToColNo[*aIt]] = true;
 
 	//Read data
+	intv activeAttrs;
+	getActiveAttrs(activeAttrs);
 	if(string(trainFName).compare("") != 0)
 	{//Read train set
 		telog << "Reading the train set: \"" << trainFName << "\"\n";
@@ -137,8 +139,8 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 		hasMV = false;
 		hasActiveMV = false;
 		intv mvCounts(activeAttrN);
-		intv activeAttrs;
-		getActiveAttrs(activeAttrs);
+		// intv activeAttrs;
+		// getActiveAttrs(activeAttrs);
 
 		getLineExt(fin, buf);
 		int caseNo;
@@ -643,9 +645,9 @@ void INDdata::getCurBag(ItemInfov& itemSet)
 //for quick implementation of groupTest and binarySearch
 double INDdata::getRangeSum(int rsetId, int caseNo, int stIdx, int edIdx)
 {
-	double ans = prefixedSum[rsetId][edIdx][caseNo];
+	double ans = prefixedSums[rsetId][edIdx][caseNo];
 	if(stIdx > 0)
-		ans -= prefixedSum[rsetId][stIdx - 1][caseNo];
+		ans -= prefixedSums[rsetId][stIdx - 1][caseNo];
 	return ans;
 	
 }
