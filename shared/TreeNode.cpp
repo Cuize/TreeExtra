@@ -869,17 +869,13 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 			for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 			{
 			int caseNo = (*pItemSet)[sampleNo].key;
-			double value = pData->getRangeSum(caseNo, attr, attr);
+			double value = pData->getValue(caseNo, attr, TRAIN);
 			// cout << "caseNo: " << caseNo << endl;
 			// cout << "value1: " << value1 << endl;
 			// cout << "value2: " << value2 << endl;
 			(*Ptmp)[sampleNo] = dipair(value, sampleNo);
 			}
 			sort(Ptmp->begin(), Ptmp->end());
-
-
-
-		
 
 			bool newSplits = singleSplit(bestSplits, bestEval, attr, Ptmp, nodeV, nodeSum, squares, rootVar, 0); //update  bestSplits, bestEval								
 			//if an attribute is exhausted, delete it, shift to next iteration
@@ -902,92 +898,113 @@ bool CTreeNode::setGroupSplit(double nodeV, double nodeSum, double squares, doub
 	dipairv* Ptmp1 = &tmp1;
 	dipairv* Ptmp2 = &tmp2;
 
-	// binary search
+	// binary search for each random subset
+	int sn = min(s,(int)((int)pAttrs->size()/10 + 1));
+	int m;
+	if(sn == 1)
+		m = 1;
+	else
+		m = (int)(2.7 * sn * log(5*sn));
 
-	int st = 0;
-	int ed = pData->getAttrN() - 1;
-	while(st<ed)
+
+	for(int rep = 0; rep < m; rep++)
 	{
-		int m = (st+ed)/2;
-		double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
-		double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
-		bool split1 = false;
-		bool split2 = false;
-
-		for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
+		int st = 0;
+		int ed = pData->getRsetN() - 1;
+		while(st<ed)
 		{
-			int caseNo = (*pItemSet)[sampleNo].key;
-			double value1 = pData->getRangeSum(caseNo, st, m);
-			double value2 = pData->getRangeSum(caseNo, m+1, ed);
-			// cout << "caseNo: " << caseNo << endl;
-			// cout << "value1: " << value1 << endl;
-			// cout << "value2: " << value2 << endl;
-			(*Ptmp1)[sampleNo] = dipair(value1, sampleNo);
-			(*Ptmp2)[sampleNo] = dipair(value2, sampleNo);
-		}
-		sort(Ptmp1->begin(), Ptmp1->end());
-		sort(Ptmp2->begin(), Ptmp2->end());
-		// *compN += (double)(sampleN + sampleN * max(1.0,log(sampleN)))/(double)pData->getTrainN();
+			int m = (st+ed)/2;
+			double groupSplitVal1 = QNAN; // split eval for group of variables from subset[st] to subset[m] 
+			double groupSplitVal2 = QNAN; // split eval for group of variables from subset[m+1] to subset[ed]
+			bool split1 = false;
+			bool split2 = false;
 
-		 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
-
-		if( (st==m) && (find(pAttrs->begin(), pAttrs->end(), m) != pAttrs->end()) )
-		{	
-			split1 = singleSplit(bestSplits, bestEval, m, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
-			//debug
-			// cout<<"st: "<<st<<endl;
-			// cout<<"m: "<<m<<endl;
-			// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-			// cout<<"active"<<endl;
-
-		}
-		else
+			for(int sampleNo = 0; sampleNo < sampleN; sampleNo++)
 			{
-			split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
-			// cout<<"st: "<<st<<endl;
-			// cout<<"m: "<<m<<endl;
-			// if(st==m)
-			// {	int attr = (pData->activeAttrs)[m];
-			// 	cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-			// 	cout<<"NotActive"<<endl;
-			// }
+				int caseNo = (*pItemSet)[sampleNo].key;
+				double value1 = pData->getRangeSum(rep, caseNo, st, m);
+				double value2 = pData->getRangeSum(rep, caseNo, m+1, ed);
+				// cout << "caseNo: " << caseNo << endl;
+				// cout << "value1: " << value1 << endl;
+				// cout << "value2: " << value2 << endl;
+				(*Ptmp1)[sampleNo] = dipair(value1, sampleNo);
+				(*Ptmp2)[sampleNo] = dipair(value2, sampleNo);
+			}
+			sort(Ptmp1->begin(), Ptmp1->end());
+			sort(Ptmp2->begin(), Ptmp2->end());
+			// *compN += (double)(sampleN + sampleN * max(1.0,log(sampleN)))/(double)pData->getTrainN();
 
-	
+			 // cout << "st: "<<st << " m " <<m << " ed: "<<ed << endl;
 
+			if(st==m)
+			{	
+				int attr = pData->getAttrId(rep, st);
+				if(find(pAttrs->begin(), pAttrs->end(), attr) != pAttrs->end())
+					split1 = singleSplit(bestSplits, bestEval, attr, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+				else
+					split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+
+				//debug
+				// cout<<"st: "<<st<<endl;
+				// cout<<"m: "<<m<<endl;
+				// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+				// cout<<"active"<<endl;
 
 			}
+			else
+				{
+				split1 = singleSplit(bestSplits, groupSplitVal1, -1, Ptmp1, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+				// cout<<"st: "<<st<<endl;
+				// cout<<"m: "<<m<<endl;
+				// if(st==m)
+				// {	int attr = (pData->activeAttrs)[m];
+				// 	cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+				// 	cout<<"NotActive"<<endl;
+				// }
 
-		if( (ed==m+1) && (find(pAttrs->begin(), pAttrs->end(), m+1) != pAttrs->end()) )
-		{	
-			
-			split2 = singleSplit(bestSplits, bestEval, m+1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
-			// cout<<"ed: "<<st<<endl;
-			// cout<<"m+1: "<<m+1<<endl;
-			// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-			// cout<<"active"<<endl;
-		}
-		else
-		{
-			split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
-		// 	if(ed==m+1)
-		// 	{	
-		// 		int attr = (pData->activeAttrs)[m+1];
-		// 		cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
-		// 		cout<<"NotActive"<<endl;
-		// 	}
-
-		 }
-
-		//  cout << "splitval1: " << groupSplitVal1 << " splitval2: " << groupSplitVal2 << endl;
-		//  cout << "split1: " << split1 << " split2: " << split2 << endl;
-
-		if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
-			ed = m;
-		else
-			st = m+1;
+		
 
 
-	}
+				}
+
+			if( ed==m+1 )
+			{	
+				int attr = pData->getAttrId(rep, ed);
+				if(find(pAttrs->begin(), pAttrs->end(), attr) != pAttrs->end())
+					split2 = singleSplit(bestSplits, bestEval, attr, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //update  bestSplits, bestEval
+				else
+					split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+				// cout<<"ed: "<<st<<endl;
+				// cout<<"m+1: "<<m+1<<endl;
+				// cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+				// cout<<"active"<<endl;
+			}
+			else
+			{
+				split2 = singleSplit(bestSplits, groupSplitVal2, -1, Ptmp2, nodeV, nodeSum, squares, rootVar, mu); //do not update  bestSplits, bestEval
+			// 	if(ed==m+1)
+			// 	{	
+			// 		int attr = (pData->activeAttrs)[m+1];
+			// 		cout<<"attrame: "<<pData->getAttrName(attr)<<endl;
+			// 		cout<<"NotActive"<<endl;
+			// 	}
+
+			 }
+
+			//  cout << "splitval1: " << groupSplitVal1 << " splitval2: " << groupSplitVal2 << endl;
+			//  cout << "split1: " << split1 << " split2: " << split2 << endl;
+
+			if(!split2 || (split1 && ( groupSplitVal1 < groupSplitVal2)))
+				ed = m;
+			else
+				st = m+1;
+
+
+		}// end while(st<ed)
+
+	}//end for(int rep = 0; rep < m; rep++)
+
+	
 
 
 	

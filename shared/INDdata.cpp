@@ -17,7 +17,7 @@
 //in the attr file.
 //filenames may be empty strings, if correspondent data is not provided
 INDdata::INDdata(const char* trainFName, const char* validFName, const char* testFName,
-	const char* attrFName, bool doOut)
+	const char* attrFName, bool doOut, int s)
 {
 	LogStream telog;
 
@@ -204,38 +204,65 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 		}
 
-		// standardize the train set for groupSplit
-		int cols = (train[0]).size(); 
-		for(int j = 0; j < cols; j++){
-			double ma = train[0][j];
-			double mi = train[0][j];
+		// standardize the train set for groupSplit, only for activeAttrs
+		// int cols = (train[0]).size(); 
+		for(int j = 0; j < activeAttrN; j++){
+			double ma = train[0][activeAttrs[j]];
+			double mi = train[0][activeAttrs[j]];
 			for(int i = 1; i < caseNo; i++){
-				ma = max(ma,train[i][j]);
-				mi = min(mi,train[i][j]);
+				ma = max(ma,train[i][activeAttrs[j]]);
+				mi = min(mi,train[i][activeAttrs[j]]);
 			}
 			if(ma > mi){
 				for(int i = 0; i < caseNo; i++)
-					train[i][j] = (train[i][j] - mi)/(ma - mi);
+					train[i][activeAttrs[j]] = (train[i][activeAttrs[j]] - mi)/(ma - mi);
 			}
 		}
 
-		// compute prefixedSum 
-		cout << "attrN: " << attrN << endl;
-		cout << "trainColNumber:  " << train[0].size()<<endl;
-		cout << "colNo: "<< colN<<endl; 
-
-		prefixedSum.resize(attrN);
-		doublev cur(trainN);
-		for(int attrNo = 0; attrNo < attrN; attrNo++)
-		{	
-			for (int j = 0; j < trainN; j++)
-			{
-				if(!isnan(train[j][attrNo]))
-					cur[j] += train[j][attrNo];
+		// compute prefixedSums and rsetToAttrId
+		int sn = min(s,(int)(activeAttrN/10 + 1));
+		int m;
+		if(sn == 1)
+			m = 1;
+		else
+			m = (int)(2.7 * sn * log(5*sn));
+		int subSize = (int)(activeAttrN/sn);
+		rsetSize = subSize;
+		prefixedSums.resize(m);
+		rsetToAttrId.resize(m);
+		intv idxs(subSize);
+		doublevv prefixedSum(subSize);
+		for(int i = 0; i < m; i++){
+			doublev cur(trainN);
+			random_shuffle( activeAttrs.begin(), activeAttrs.end() );
+			for(int j = 0; j < subSize; j++){
+				idxs[j] = activeAttrs[j];
+				for(int k = 0; k < trainN; k++)
+					cur[k] += train[k][activeAttrs[j]];
+				prefixedSum[j] = cur;
 			}
-			prefixedSum[attrNo]=cur;
-
+			prefixedSums[i] = prefixedSum;
+			rsetToAttrId[i] = idxs;
 		}
+
+
+
+		// cout << "attrN: " << attrN << endl;
+		// cout << "trainColNumber:  " << train[0].size()<<endl;
+		// cout << "colNo: "<< colN<<endl; 
+
+		// prefixedSum.resize(attrN);
+		// doublev cur(trainN);
+		// for(int attrNo = 0; attrNo < attrN; attrNo++)
+		// {	
+		// 	for (int j = 0; j < trainN; j++)
+		// 	{
+		// 		if(!isnan(train[j][attrNo]))
+		// 			cur[j] += train[j][attrNo];
+		// 	}
+		// 	prefixedSum[attrNo]=cur;
+
+		// }
 
 		// // debugging test
 		// for(int i = 0; i < 10; i++)
@@ -377,17 +404,17 @@ INDdata::INDdata(const char* trainFName, const char* validFName, const char* tes
 
 
 		// standardize the validation set for groupSplit
-		int cols = (valid[0]).size();
-		for(int j = 0; j < cols; j++){
-			double ma = valid[0][j];
-			double mi = valid[0][j];
+		// int cols = (valid[0]).size();
+		for(int j = 0; j < activeAttrN; j++){
+			double ma = valid[0][activeAttrs[j]];
+			double mi = valid[0][activeAttrs[j]];
 			for(int i = 1; i < validN; i++){
-				ma = max(ma,valid[i][j]);
-				mi = min(mi,valid[i][j]);
+				ma = max(ma,valid[i][activeAttrs[j]]);
+				mi = min(mi,valid[i][activeAttrs[j]]);
 			}
 			if(ma > mi){
 				for(int i = 0; i < validN; i++)
-					valid[i][j] = (valid[i][j] - mi)/(ma - mi);
+					valid[i][activeAttrs[j]] = (valid[i][activeAttrs[j]] - mi)/(ma - mi);
 			}
 		}
 
@@ -614,14 +641,13 @@ void INDdata::getCurBag(ItemInfov& itemSet)
 
 
 //for quick implementation of groupTest and binarySearch
-double INDdata::getRangeSum(int caseNo, int stIdx, int edIdx)
+double INDdata::getRangeSum(int rsetId, int caseNo, int stIdx, int edIdx)
 {
-	double ans = prefixedSum[edIdx][caseNo];
+	double ans = prefixedSum[rsetId][edIdx][caseNo];
 	if(stIdx > 0)
-		ans -= prefixedSum[stIdx - 1][caseNo];
+		ans -= prefixedSum[rsetId][stIdx - 1][caseNo];
 	return ans;
 	
-
 }
 
 

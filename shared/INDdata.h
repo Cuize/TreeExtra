@@ -10,7 +10,7 @@ class INDdata
 public:
 	//loads data into memory
 	INDdata(const char* trainFName, const char* valFName, const char* testFName, 
-			const char* attrFName, bool doOut = true);
+			const char* attrFName, bool doOut = true, int s = 1);
 	
 //private members get functions  
 	int getAttrN(){return attrN;}	
@@ -21,6 +21,9 @@ public:
 	int getOutOfBag(intv& oobData_out, doublev& oobTar_out);
 	bool useCoef(){return hasActiveMV || (weightColNo != -1);}
 	bool getHasActiveMV(){return hasActiveMV;}
+	//for quick implementation of groupTest and binarySearch
+	int getAttrId(int rsetId, int attrNo){return rsetToAttrId[rsetId][attrNo];}
+	int getRsetN(){return rsetSize;}
 
 //untrivial get functions
 
@@ -42,7 +45,7 @@ public:
 
 
 	//for quick implementation of groupTest and binarySearch
-	double getRangeSum(int caseNo, int stIdx, int edIdx);
+	double getRangeSum(int rsetId, int caseNo, int stIdx, int edIdx);
 
 	//gets a value of a given attribute for a given case in a given data set
 	double getValue(int itemNo, int attrId, DATA_SET dset);
@@ -143,7 +146,9 @@ private:
 	// dipairvv sortedItems; //several copies of sorted data points in the bag
 							//separate vector for sorting by each attribute
 							//each data point represented as (id, attrvalue) pair
-	doublevv prefixedSum; // for groupTest and binarySearch
+	doublevvv prefixedSums; // for groupTest and binarySearch. prefixedSum[0],..,prefixedSum[m-1] are prefixedSum matrices for each random subset
+	intvv rsetToAttrId; 	   // for groupTest and binarySearch. each vector is a map from random subset of active attribute to its Id
+	int rsetSize;
 
 	bool hasMV;			//data has missing values
 	bool hasActiveMV;	//data has missing values in active attributes
